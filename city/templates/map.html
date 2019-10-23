@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="map" style="height:80vh;width:100%; border: 1pt solid;" ></div>
+</body>
+<script>
+    function initMap() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: {lat: 22.9988465,lng: 120.2173261 },
+        });
+        directionsDisplay.setMap(map);
+        console.log('map');
+    }
+    setTimeout(function () {
+        {% for route in LowWater%}
+            mapLayer("{{ route }}","#a932ff")
+        {% endfor %}
+        {% for route in MidWater%}
+            mapLayer("{{ route }}","#ff36e9")
+        {% endfor %}
+        {% for route in HighWater%}
+            mapLayer("{{ route }}","#ff3535")
+        {% endfor %}
+        {% for route in THighWater%}
+            mapLayer("{{ route }}","#402118")
+        {% endfor %}
+        {% for route in LowGround%}
+           //mapLayer('{{ route }}','#a9e2ff')
+        {% endfor %}
+        {% for route in MidGround%}
+            //mapLayer('{{ route }}','#ff36e9')
+        {% endfor %}
+        {% for route in HighGround%}
+            //mapLayer('{{ route }}','#ff3535')
+        {% endfor %}
+        {% for holePosition in hole %}
+            //mapMarker('{{ holePosition }}')
+        {% endfor %}
+    },100)
+function mapLayer(route,color) {
+    var data = [];
+    var latlonSplit = route.split(' ')
+    for (var element in latlonSplit) {
+
+        data.push({
+            lat: parseFloat(latlonSplit[element].split(',')[0], 10),
+            lng: parseFloat(latlonSplit[element].split(',')[1], 10)
+        })
+    }
+    var tmpLayer = new google.maps.Data({map:map});
+    tmpLayer.setStyle({
+        fillColor: color,
+        strokeWeight: 1
+    });
+    tmpLayer.add({geometry: new google.maps.Data.Polygon([data])})
+}
+function mapRoute(route,color) {
+    var data = [];
+    var latlonSplit = route.split(' ')
+    for (var element in latlonSplit) {
+
+        data.push({
+            lat: parseFloat(latlonSplit[element].split(',')[0], 10),
+            lng: parseFloat(latlonSplit[element].split(',')[1], 10)
+        })
+    }
+    var flightPath = new google.maps.Polyline({
+        path: data,
+        geodesic: true,
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 1
+    });
+    flightPath.setMap(map);
+}
+function mapMarker(pos) {
+    var icon = {
+        url: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
+        scaledSize: new google.maps.Size(15, 15), // scaled size
+        origin: new google.maps.Point(0,0), // origin
+        anchor: new google.maps.Point(0, 0) // anchor
+    };
+    latlon = new google.maps.LatLng({lat: parseFloat(pos.split(",")[0],10), lng: parseFloat(pos.split(",")[1],10)})
+    var marker = new google.maps.Marker({
+        position: latlon,
+        map: map,
+        icon:icon
+    });
+    marker.setMap(map)
+}
+
+</script>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
+</html>

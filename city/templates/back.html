@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="map" style="height:50vh;width:100%; border: 1pt solid;" ></div>
+{{ LatLon }}
+</body>
+<script>
+    function initMap() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 20,
+            center: {lat: 22.9988465,lng: 120.2173261 },
+        });
+        directionsDisplay.setMap(map);
+        console.log('map');
+    }
+    setTimeout(function () {
+        var data = [];
+        var latlonSplit = "{{ LatLon }}".split(' ')
+        for (var element in latlonSplit){
+            if(element == 0){
+                let latLng = new google.maps.LatLng(parseFloat(latlonSplit[element].split(',')[0],10),  parseFloat(latlonSplit[element].split(',')[1],10))
+                map.setCenter(latLng)
+            }
+            /*
+            console.log(latlonSplit[element])
+            let latLng = new google.maps.LatLng(parseFloat(latlonSplit[element].split(',')[0],10),  parseFloat(latlonSplit[element].split(',')[1],10))
+            if(element == 0){
+                map.setCenter(latLng)
+            }
+            data.push({
+                position : latLng,
+                map:map,
+                title: element,
+                visible: true
+            })
+             */
+            data.push({lat:parseFloat(latlonSplit[element].split(',')[0],10) ,lng: parseFloat(latlonSplit[element].split(',')[1],10)})
+        }
+        /*
+        var marker
+        for (var i= 0; data.length >i ; i++) {
+            marker = new google.maps.Marker(data[i]);
+            console.log("google map marker number",i)
+            console.log(data[i])
+              marker.setMap(map);
+
+        }
+         */
+
+        var flightPath = new google.maps.Polyline({
+          path: data,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        flightPath.setMap(map);
+    },100)
+
+
+</script>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
+</html>
