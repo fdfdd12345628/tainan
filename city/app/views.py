@@ -1,15 +1,15 @@
 from django.shortcuts import render
-import urllib.request, json
+import itertools
 import csv
-import pyproj
+import datetime
+from django.http import JsonResponse
+from django.utils.timezone import make_aware
+from .models import weather,hole
 from .water import water
 
 # Create your views here.
 def googleMap(request):
     content = {}
-    # twd97 資料庫為施工地點案件範圍點位
-    #twd97 = "170775.9394 2544165.3128,170774.3878 2544166.4764,170787.5753 2544167.6394,170787.9633 2544165.7001,170775.9394 2544165.3128"
-    #content['LatLon'] = transfer(twd97)
     # water 為淹水淺勢圖
     tmpWater = water()
     content['LowWater'] = tmpWater[0]
@@ -17,45 +17,13 @@ def googleMap(request):
     content['HighWater'] = tmpWater[2]
     content['THighWater'] = tmpWater[3]
 
-    tmpGroundList = ground()
-    content['LowGround'] = tmpGroundList[0]
-    content['MidGround'] = tmpGroundList[1]
-    content['HighGround'] = tmpGroundList[2]
-    content['hole'] = hole()
+    content['hole'] = holePos()
     return render(request,"map.html",content)
 
 
-def transfer(twd97):
-    TWD97 = pyproj.Proj(init='epsg:3826')  # 定義TWD97坐標系
-    WGS84 = pyproj.Proj(init='epsg:4326')  # 定義WGS84坐標系
-    wgs84=""
-    for line in twd97.split(','):
-        t = line.split()  # separate each column, using "space"
-        lon, lat = pyproj.transform(TWD97, WGS84, t[0], t[1])
-        # 將TWD97坐標轉成WGS84經緯度
-        wgs84 += " "+str(lat)+","+str(lon)
-        print(lat,lon)
-    return wgs84[1:]
-
-
-def ground():
-    returnList = [[],[],[]]
-    # low,medium,high
-    with urllib.request.urlopen(
-            "https://data.tainan.gov.tw/dataset/175c9778-62d5-4bb4-b19a-1d8171632ce4/resource/1ff9b2d6-9764-45b5-940d-c72073b6b469/download/liquefaction.json") as url:
-        data = json.loads(url.read().decode('utf-8-sig'))
-    for ele in data['features']:
-        for el in ele['geometry']['coordinates']:
-            tmpstr = ""
-            for e in el:
-                tmpstr += " "+str(e[1]) + "," + str(e[0])
-            returnList[ele['properties']['classify']].append(tmpstr[1:])
-    return returnList
-
-
-def hole():
+def holePos():
     returnList = []
-    file = open("result.csv",'r')
+    file = open("csv/result.csv",'r')
     reader = csv.reader(file)
     for row in reader:
         if row[9] == "鋪面":
@@ -63,3 +31,61 @@ def hole():
             returnList.append(" "+tmpList[1][3:]+","+tmpList[0][3:])
     return returnList
 
+
+def processDataWeather(request):
+    content = {}
+    title = "weather"
+    content["DataTitle"] = title
+    file = open("csv/"+title+".csv","r")
+    reader = csv.reader(file)
+    bulkCreateList = []
+    for row in itertools.islice(reader,6575,7228):
+        date=datetime.datetime.strptime(row[1],"%Y%m%d")
+        for i in [8,14,22,24,26]:
+            if row[i] == "T" or row[i] == "X":
+                row[i] = 0
+        bulkCreateList.append(weather(date=make_aware(date),temperature=float(row[8]),relativeHumidity=float(row[14]),rainfall=float(row[22]),maxTenMinuteRainFall=float(row[24]),maxSixtyMinuteRainFall=float(row[26])))
+    weather.objects.bulk_create(bulkCreateList)
+    return render(request,"processData.html",content)
+
+def processDataHole(request):
+    content = {}
+    title = "holeWithFloodArea"
+    content["DataTitle"] = title
+    file = open("csv/" + title + ".csv", "r")
+    reader = csv.reader(file)
+    bulkCreateList = []
+    for row in itertools.islice(reader,1,696):
+        occurTime=datetime.datetime.strptime(row[2],"%Y/%m/%d %H:%M:%S")
+        tmp = row[13].split("X_97")[0].split(" ")
+        lon = tmp[0]
+        lat = tmp[1]
+        bulkCreateList.append(hole(town=row[8],positionLat=float(lat[3:]),positionLon=float(lon[3:]),occurTime=make_aware(occurTime),reason=row[7],address=row[12],flood=row[14]))
+    hole.objects.bulk_create(bulkCreateList)
+    return render(request,"processData.html",content)
+
+
+def displayHole(request):
+    content = {}
+    content["towns"] = [ele['town'] for ele in hole.objects.values('town').distinct()]
+    content["reason"] = [ele['reason'] for ele in hole.objects.values('reason').distinct()]
+    return render(request,"displayHole.html",content)
+
+
+def searchHole(request):
+    content = {}
+    holeList = hole.objects.all()
+    filterTowns = request.POST.getlist("towns[]","")
+    filterReasons = request.POST.getlist("reasons[]","")
+    filterDates = request.POST.get("dates","")
+    if filterTowns != "":
+        holeList = holeList.filter(town__in = filterTowns)
+    if filterReasons != "":
+        holeList = holeList.filter(reason__in = filterReasons)
+    if filterDates != "":
+        filterStartDate = make_aware(datetime.datetime.strptime(filterDates.split(" - ")[0],"%m/%d/%Y"))
+        filterEndDate = make_aware(datetime.datetime.strptime(filterDates.split(" - ")[1],"%m/%d/%Y"))
+        holeList = holeList.filter(occurTime__range=(filterStartDate,filterEndDate))
+    holeList = [str(ele.positionLat)+","+str(ele.positionLon) for ele in holeList]
+    content["holeList"] = holeList
+    return JsonResponse(content)

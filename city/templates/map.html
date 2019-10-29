@@ -31,15 +31,6 @@
         {% for route in THighWater%}
             mapLayer("{{ route }}","#402118")
         {% endfor %}
-        {% for route in LowGround%}
-           //mapLayer('{{ route }}','#a9e2ff')
-        {% endfor %}
-        {% for route in MidGround%}
-            //mapLayer('{{ route }}','#ff36e9')
-        {% endfor %}
-        {% for route in HighGround%}
-            //mapLayer('{{ route }}','#ff3535')
-        {% endfor %}
         {% for holePosition in hole %}
             //mapMarker('{{ holePosition }}')
         {% endfor %}

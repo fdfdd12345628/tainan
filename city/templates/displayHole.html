@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <meta charset="UTF-8">
+    <title>displayHole</title>
+</head>
+<body>
+<form>
+    <div class="row">
+        <div class="form-group col-6">
+            <label for="townSelect">行政區</label>
+            <select multiple class="form-control" id="townSelect">
+                {% for ele in towns %}
+                    <option value="{{ele}}">{{ ele }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-6">
+            <label for="reasonSelect">坑洞原因</label>
+            <select multiple class="form-control" id="reasonSelect">
+                {% for ele in reason %}
+                    <option value="{{ele}}">{{ ele }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </div>
+    <div class="form-group">
+        <label for="startDateSelect">起始日期</label>
+        <input placeholder="Selected date" type="text" id="startDateSelect" name="startDateSelect" class="form-control pull-right">
+    </div>
+</form>
+<button type="button" class="btn btn-primary btn-lg" id="search">Search</button>
+<div id="map" style="height:80vh;width:100%; border: 1pt solid;" ></div>
+</body>
+<script>
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+/******
+for csrf token
+*******/
+</script>
+<script>
+    /*****
+     * for date picker
+     *****/
+    $('input[name="startDateSelect"]').on("click",function (e) {
+        $('input[name="startDateSelect"]').daterangepicker();
+    })
+
+    /***
+     * for google map api marker
+     ***/
+    var gmarkers=[]
+    function initMap() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: {lat: 22.9988465,lng: 120.2173261 },
+        });
+        directionsDisplay.setMap(map);
+        console.log('map');
+    }
+    setTimeout(function () {
+        $.ajax({
+            type: "POST",
+            url: '../searchHole',
+            data:{
+                towns:[],
+                reasons:[],
+                dates:"",
+                'csrfmiddlewaretoken':  csrftoken ,
+            },
+            dataType:'json',
+            success: function (content) {
+                console.log(content)
+                for(ele in content.holeList){
+                    mapMarker(content.holeList[ele])
+                }
+            }
+        })
+        {% for holePosition in hole %}
+            //mapMarker('{{ holePosition }}')
+        {% endfor %}
+    },100)
+    $("#search").on("click",function () {
+        towns = $("#townSelect").val()
+        reasons = $("#reasonSelect").val()
+        dates = $("#startDateSelect").val()
+        removeMarkers()
+        $.ajax({
+            type: "POST",
+            url: '../searchHole',
+            data:{
+                towns: towns,
+                reasons: reasons,
+                dates: dates,
+                'csrfmiddlewaretoken':  csrftoken ,
+            },
+            dataType:'json',
+            success: function (content) {
+                console.log(content)
+                for(ele in content.holeList){
+                    mapMarker(content.holeList[ele])
+                }
+            }
+        })
+    })
+
+    function mapMarker(pos) {
+        var icon = {
+            url: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
+            scaledSize: new google.maps.Size(15, 15), // scaled size
+            origin: new google.maps.Point(0,0), // origin
+            anchor: new google.maps.Point(0, 0) // anchor
+        };
+        console.log(pos)
+        latlon = new google.maps.LatLng({lat: parseFloat(pos.split(",")[0],10), lng: parseFloat(pos.split(",")[1],10)})
+        var marker = new google.maps.Marker({
+            position: latlon,
+            map: map,
+            icon:icon
+        });
+        gmarkers.push(marker);
+        marker.setMap(map)
+    }
+    function removeMarkers(){
+        for(i=0; i<gmarkers.length; i++){
+            gmarkers[i].setMap(null);
+        }
+    }
+
+</script>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
+</html>
