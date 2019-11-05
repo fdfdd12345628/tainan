@@ -20,20 +20,23 @@
     }
     setTimeout(function () {
         {% for route in LowWater%}
-            mapLayer("{{ route }}","#a932ff")
+            //mapLayer("{{ route }}","#a932ff")
         {% endfor %}
         {% for route in MidWater%}
-            mapLayer("{{ route }}","#ff36e9")
+            //mapLayer("{{ route }}","#ff36e9")
         {% endfor %}
         {% for route in HighWater%}
-            mapLayer("{{ route }}","#ff3535")
+            //mapLayer("{{ route }}","#ff3535")
         {% endfor %}
         {% for route in THighWater%}
-            mapLayer("{{ route }}","#402118")
+            //mapLayer("{{ route }}","#402118")
         {% endfor %}
         {% for holePosition in hole %}
             //mapMarker('{{ holePosition }}')
         {% endfor %}
+        mapMarker("23.01562292989273,120.1995082298927")
+        mapMarker("23.01292327010728,120.1968085701073")
+        mapMarker("23.0142731,120.1981584")
     },100)
 function mapLayer(route,color) {
     var data = [];

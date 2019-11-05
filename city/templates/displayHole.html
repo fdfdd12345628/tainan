@@ -16,54 +16,90 @@
     <title>displayHole</title>
 </head>
 <body>
-<form>
-    <div class="row">
-        <div class="form-group col-6">
-            <label for="townSelect">行政區</label>
-            <select multiple class="form-control" id="townSelect">
-                {% for ele in towns %}
-                    <option value="{{ele}}">{{ ele }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group col-6">
-            <label for="reasonSelect">坑洞原因</label>
-            <select multiple class="form-control" id="reasonSelect">
-                {% for ele in reason %}
-                    <option value="{{ele}}">{{ ele }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
+<div class="nav nav-fill">
+    <div class="form-group nav-item">
+        <label for="townSelect">行政區</label>
+        <select multiple class="form-control" id="townSelect">
+            {% for ele in towns %}
+                <option value="{{ele}}">{{ ele }}</option>
+            {% endfor %}
+        </select>
     </div>
-    <div class="form-group">
+    <div class="form-group nav-item">
+        <label for="reasonSelect">坑洞原因</label>
+        <select multiple class="form-control" id="reasonSelect">
+            {% for ele in reason %}
+                <option value="{{ele}}">{{ ele }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group nav-item">
         <label for="startDateSelect">起始日期</label>
         <input placeholder="Selected date" type="text" id="startDateSelect" name="startDateSelect" class="form-control pull-right">
     </div>
-</form>
-<button type="button" class="btn btn-primary btn-lg" id="search">Search</button>
-<div id="map" style="height:80vh;width:100%; border: 1pt solid;" ></div>
+    <div class="nav-item" id="buttonNav">
+        <button type="button" class="btn btn-primary btn-sm" id="search">Search</button>
+    </div>
+</div>
+<div class="container-fluid fullPage">
+    <div class="row">
+        <div class="col-lg-8" id="map">
+        </div>
+        <div class="col-lg-4" id="statistics">
+            <iframe src="https://hasdoel.ml/grafana/dashboard-solo/snapshot/9eVX4gRhyHf5yiyDXpb11BjOB6M3hpMX?orgId=0&from=1565078404606&to=1572854404606&panelId=6" class="statistics" frameborder="0"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="holeDetailModal" tabindex="-1" >
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">案件編號 </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <label for="reasonModal" style="color: #666666">施工原因</label>
+          <p id="reasonModal" type="text">路面破損</p>
+          <label for="timeModal" style="color: #666666">日期</label>
+          <p id="timeModal" type="text">2019-01-11 20:30:29</p>
+          <label for="positionModal" style="color: #666666">經緯度</label>
+          <p id="positionModal" type="text">23.2781987029346 , 120.310877483131,2061</p>
+          <label for="contentModal" style="color: #666666">內容</label>
+          <p id="contentModal" type="text">後壁區嘉民里143號之3宅前路面改善工程</p>
+          <label for="weatherModal" style="color: #666666">氣候</label>
+          <p id="weatherModal" type="text"><b>氣溫: <span id="temperatureModal">18.5°C</span>  降雨量:<span id="rainFallModal">80mm</span></b></p>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!--div id="map" style="height:80vh;width:100%; border: 1pt solid;" ></div-->
 </body>
 <script>
     function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
-    }
-    return cookieValue;
+        return cookieValue;
     }
     var csrftoken = getCookie('csrftoken');
-/******
-for csrf token
-*******/
+    /******
+     for csrf token
+     *******/
 </script>
 <script>
     /*****
@@ -81,7 +117,7 @@ for csrf token
         directionsService = new google.maps.DirectionsService;
         directionsDisplay = new google.maps.DirectionsRenderer;
         map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 10,
+            zoom: 13,
             center: {lat: 22.9988465,lng: 120.2173261 },
         });
         directionsDisplay.setMap(map);
@@ -145,18 +181,93 @@ for csrf token
         var marker = new google.maps.Marker({
             position: latlon,
             map: map,
-            icon:icon
+            icon:icon,
+            name:pos.split(",")[2],
         });
         gmarkers.push(marker);
         marker.setMap(map)
+        google.maps.event.addListener(marker, 'click', function() {clickMarkers(marker.name)});
     }
     function removeMarkers(){
         for(i=0; i<gmarkers.length; i++){
             gmarkers[i].setMap(null);
         }
     }
+    function clickMarkers(id){
+        //alert(lat+","+lng);
+        console.log(id)
+        $.ajax({
+            type: "POST",
+            url: '../searchHoleDetail',
+            data:{
+                id:id,
+                'csrfmiddlewaretoken':  csrftoken ,
+            },
+            dataType:'json',
+            success: function (content) {
+                console.log(content);
+                $("#reasonModal").text(content["reason"]);
+                $("#positionModal").text(content["position"]);
+                $("#contentModal").text(content["address"]);
+                $("#timeModal").text(content["time"]);
+                $("#temperatureModal").text(content["temperature"]);
+                $("#rainfallModal").text(content["rainfall"]);
+                $("#holeDetailModal").modal("show");
+            }
+        })
 
+    }
 </script>
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
 </html>
+<style>
+    body{
+        background: azure;
+    }
+    .fullPage{
+        height: 100vh;
+        position: absolute;
+        top:0;
+        z-index: 1;
+    }
+    #map{
+        height:100vh;
+        max-height: 100vw;
+    }
+    .nav{
+        width: 100%;
+        background: black;
+        opacity: 0.8;
+        position: absolute;
+        top: 0;
+        color: white;
+        z-index: 2;
+        font-size: 2vh;
+    }
+    .nav-item{
+        margin: .5% 2%;
+        height: 10vh;
+    }
+    select.form-control[multiple], select.form-control[size]{
+        height: 5vh;
+    }
+    #search{
+        height: 5vh;
+        width: 100%;
+        position: relative;
+        top: 3.8vh;
+    }
+    .statistics{
+        width: 100%;
+        height: 33.3vh;
+        max-height: 100vw;
+    }
+    #statistics{
+        padding-top: 10vh;
+        height: fit-content;
+    }
+    span{
+        font-weight: normal;
+    }
+</style>
