@@ -23,7 +23,7 @@ def googleMap(request):
 
 def holePos():
     returnList = []
-    file = open("csv/result.csv",'r')
+    file = open("csv/result.csv",'r', encoding='utf8')
     reader = csv.reader(file)
     for row in reader:
         if row[9] == "鋪面":
@@ -36,7 +36,7 @@ def processDataWeather(request):
     content = {}
     title = "weather"
     content["DataTitle"] = title
-    file = open("csv/"+title+".csv","r")
+    file = open("csv/"+title+".csv","r", encoding='utf8')
     reader = csv.reader(file)
     bulkCreateList = []
     for row in itertools.islice(reader,6575,7228):
@@ -52,7 +52,7 @@ def processDataHole(request):
     content = {}
     title = "holeWithFloodArea"
     content["DataTitle"] = title
-    file = open("csv/" + title + ".csv", "r")
+    file = open("csv/" + title + ".csv", "r", encoding='utf8')
     reader = csv.reader(file)
     bulkCreateList = []
     for row in itertools.islice(reader,1,696):
@@ -63,6 +63,23 @@ def processDataHole(request):
         bulkCreateList.append(hole(town=row[8],positionLat=float(lat[3:]),positionLon=float(lon[3:]),occurTime=make_aware(occurTime),reason=row[7],address=row[12],flood=row[14]))
     hole.objects.bulk_create(bulkCreateList)
     return render(request,"processData.html",content)
+
+def processDataHoleWithRoad(request):
+    content = {}
+    title = "holeWithFloodArea"
+    content["DataTitle"] = title
+    file = open("csv/" + title + ".csv", "r", encoding='utf8')
+    reader = csv.reader(file)
+    bulkCreateList = []
+    for row in itertools.islice(reader,1,696):
+        occurTime=datetime.datetime.strptime(row[2],"%Y/%m/%d %H:%M:%S")
+        tmp = row[13].split("X_97")[0].split(" ")
+        lon = tmp[0]
+        lat = tmp[1]
+        bulkCreateList.append(hole(town=row[8],positionLat=float(lat[3:]),positionLon=float(lon[3:]),occurTime=make_aware(occurTime),reason=row[7],address=row[12],flood=row[14]))
+    hole.objects.bulk_create(bulkCreateList)
+    return render(request,"processData.html",content)
+
 
 
 def displayHole(request):
