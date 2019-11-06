@@ -48,6 +48,8 @@
         </div>
         <div class="col-lg-4" id="statistics">
             <iframe src="https://hasdoel.ml/grafana/dashboard-solo/snapshot/9eVX4gRhyHf5yiyDXpb11BjOB6M3hpMX?orgId=0&from=1565078404606&to=1572854404606&panelId=6" class="statistics" frameborder="0"></iframe>
+            <iframe src="https://hasdoel.ml/grafana/dashboard-solo/snapshot/WZXQUumUREb0YbfpLteiFEhjfZi9r8OF?orgId=1&from=1565240999225&to=1573016999225&panelId=2" class="statistics" frameborder="0"></iframe>
+            <iframe src="https://hasdoel.ml/grafana/dashboard-solo/snapshot/l4MhbI8SwX4hVIMK41voh1NO7ouWTVTG?orgId=1&from=1565241052418&to=1573017052418&panelId=8" class="statistics" frameborder="0"></iframe>
         </div>
     </div>
 </div>
@@ -119,6 +121,86 @@
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 13,
             center: {lat: 22.9988465,lng: 120.2173261 },
+            styles: [
+            {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+            {
+              featureType: 'administrative.locality',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'geometry',
+              stylers: [{color: '#263c3f'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#6b9a76'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry',
+              stylers: [{color: '#38414e'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#212a37'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#9ca5b3'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry',
+              stylers: [{color: '#746855'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#1f2835'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#f3d19c'}]
+            },
+            {
+              featureType: 'transit',
+              elementType: 'geometry',
+              stylers: [{color: '#2f3948'}]
+            },
+            {
+              featureType: 'transit.station',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'geometry',
+              stylers: [{color: '#17263c'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#515c6d'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.stroke',
+              stylers: [{color: '#17263c'}]
+            }
+          ]
         });
         directionsDisplay.setMap(map);
         console.log('map');
@@ -223,7 +305,7 @@
 </html>
 <style>
     body{
-        background: azure;
+        background: black;
     }
     .fullPage{
         height: 100vh;
@@ -265,7 +347,8 @@
     }
     #statistics{
         padding-top: 10vh;
-        height: fit-content;
+        height: 100%;
+        overflow: scroll;
     }
     span{
         font-weight: normal;
