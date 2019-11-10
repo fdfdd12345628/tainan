@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import googleMap, processDataWeather, processDataHole, displayHole, searchHole, searchHoleDetail, processDataWeatherPredict
+from .views import googleMap, processDataWeather, processDataHole, displayHole, searchHole, searchHoleDetail, processDataWeatherPredict, downloadSplitData
 
 urlpatterns = [
     path('map',googleMap),
@@ -10,4 +10,7 @@ urlpatterns = [
     path('displayHole',displayHole),
     path('searchHole', searchHole),
     path('searchHoleDetail', searchHoleDetail),
+    path('downloadSplitData/<int:id>', downloadSplitData),
+
+
 ]

@@ -218,9 +218,14 @@
             dataType:'json',
             success: function (content) {
                 console.log(content)
+                var av = 0
+                var c =0
                 for(ele in content.holeList){
                     mapMarker(content.holeList[ele])
+                    av += parseFloat(content.holeList[ele].split(",")[0],10)
+                    c +=1
                 }
+                console.log(av/c)
             }
         })
         {% for holePosition in hole %}
@@ -258,7 +263,7 @@
             origin: new google.maps.Point(0,0), // origin
             anchor: new google.maps.Point(0, 0) // anchor
         };
-        console.log(pos)
+        //console.log(pos)
         latlon = new google.maps.LatLng({lat: parseFloat(pos.split(",")[0],10), lng: parseFloat(pos.split(",")[1],10)})
         var marker = new google.maps.Marker({
             position: latlon,
@@ -266,7 +271,6 @@
             icon:icon,
             name:pos.split(",")[2],
         });
-        gmarkers.push(marker);
         marker.setMap(map)
         google.maps.event.addListener(marker, 'click', function() {clickMarkers(marker.name)});
     }
@@ -290,7 +294,7 @@
                 console.log(content);
                 $("#reasonModal").text(content["reason"]);
                 $("#positionModal").text(content["position"]);
-                $("#contentModal").text(content["address"]);
+                $("#contentModal").text(content["detail"]);
                 $("#timeModal").text(content["time"]);
                 $("#temperatureModal").text(content["temperature"]);
                 $("#rainfallModal").text(content["rainfall"]);

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ProcessData</title>
+</head>
+<body>
+<h1>{{ DataTitle }}</h1>
+{% for row in content %}
+    {{ row.locationName }}
+{% endfor %}
+</body>
+</html>
+<script>
+    window.location.assign("../static/{{ downloadURL }}");
+</script>

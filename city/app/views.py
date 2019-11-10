@@ -120,9 +120,10 @@ def processDataWeatherPredict(request):
                             newRow.append(eachMeas['time'][i]['elementValue'][0]['value'])
                         else:
                             newRow.append(eachMeas['time'][i]['elementValue']['value'])
-            totalRow.append(newRow)
+                totalRow.append(newRow)
         writer.writerows(totalRow)
-    return render(request,"processData.html",content)
+        content["downloadURL"] = "predict.csv"
+    return render(request,"downloadData.html.html",content)
 
 
 def displayHole(request):
@@ -159,7 +160,6 @@ def searchHole(request):
 def searchHoleDetail(request):
     content = {}
     tmpHole = hole.objects.filter(id=request.POST.get("id","")).first()
-    print(tmpHole)
     content["reason"] = tmpHole.reason
     content["position"] = str(tmpHole.positionLat) +" , "+ str(tmpHole.positionLon)
     content["detail"] = tmpHole.address
@@ -168,3 +168,34 @@ def searchHoleDetail(request):
     content["temperature"] = str(weatherDate.temperature) + " °C "
     content["rainfall"] = str(weatherDate.rainfall) + "mm"
     return JsonResponse(content)
+
+
+'''
+下載不同維度區塊的資料
+'''
+def downloadSplitData(request, id):
+    content = {}
+    content["DataTitle"] = "downSplitData"+str(id)
+    columnNum = 17168.92 // id + 1  # 根據切割長度計算欄數
+    rowNum = 12314.61 // id + 1
+    with open('csv/result_with_1year_digging.csv','r',encoding="utf8") as csvinput:
+        with open('csv/區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv', 'w+', encoding='utf8') as csvoutput:
+            writer = csv.writer(csvoutput, lineterminator='\n')
+            reader = csv.reader(csvinput)
+            all = []
+            row = next(reader)
+            row.append('splitArea')
+            all.append(row)
+            for row in reader:
+                if row[9] == "鋪面":
+                    tmpList = row[13].split("X_97")[0].split(" ")
+                    longitude = float(tmpList[0][3:])
+                    latitude = float(tmpList[1][3:])
+                    if 120.143344802625 < longitude < 120.31099515462 and 22.9608991322419 < latitude < 23.0722689885349:
+                        unitX = ( (longitude - 120.143344802625) * 102409.09 ) // id + 1
+                        unitY = (latitude - 22.9608991322419) * 110574 // id
+                        row.append(unitY * columnNum + unitX)
+                        all.append(row)
+            writer.writerows(all)
+    content["downloadURL"] = '區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv'
+    return render(request,"downloadData.html",content)
