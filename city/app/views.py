@@ -278,7 +278,10 @@ def downloadSplitData(request, id):
                         if datetime.datetime.strptime(row[3],"%Y.%m.%d") > endTime:
                             break
                         colN = int(float(row[9]) % columnNum - 1)  # 放入channel
-                        rowN = int(float(row[9]) // columnNum)
+                        if int(float(row[9]) % columnNum) == 0:
+                            rowN = int(float(row[9]) // columnNum) - 1
+                        else:
+                            rowN = int(float(row[9]) // columnNum)
                         channel_roadwork[rowN][colN] += 1
                     else:
                         continue
