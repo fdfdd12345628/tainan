@@ -2,6 +2,7 @@ from django.shortcuts import render
 import itertools
 import urllib,json
 import csv
+import os
 import datetime
 from django.http import JsonResponse
 from django.utils.timezone import make_aware
@@ -176,26 +177,132 @@ def searchHoleDetail(request):
 def downloadSplitData(request, id):
     content = {}
     content["DataTitle"] = "downSplitData"+str(id)
+    '''
+    水平總長： 17168.92 m
+    垂直總長： 12314.61 m 
+    '''
     columnNum = 17168.92 // id + 1  # 根據切割長度計算欄數
-    rowNum = 12314.61 // id + 1
-    with open('csv/result_with_1year_digging.csv','r',encoding="utf8") as csvinput:
-        with open('csv/區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv', 'w+', encoding='utf8') as csvoutput:
-            writer = csv.writer(csvoutput, lineterminator='\n')
-            reader = csv.reader(csvinput)
-            all = []
+    rowNum = 12314.61 // id +1
+    if os.path.isfile('csv/區塊坑洞挖掘紀錄_' + str(id) + '公尺.json'):
+        pass
+    else:
+        if os.path.isfile('csv/區塊坑洞挖掘紀錄_' + str(id) + '公尺.csv'):
+            pass
+        else:
+            # 轉區塊坑洞機錄
+            with open('csv/result_with_1year_digging.csv', 'r',encoding="utf8") as csvinput:
+                with open('csv/區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv', 'w+', encoding='utf8') as csvoutput:
+                    writer = csv.writer(csvoutput, lineterminator='\n')
+                    reader = csv.reader(csvinput)
+                    all = []
+                    row = next(reader)
+                    row.append('splitArea')
+                    all.append(row)
+                    for row in reader:
+                        if row[9] == "鋪面":
+                            tmpList = row[13].split("X_97")[0].split(" ")
+                            longitude = float(tmpList[0][3:])
+                            latitude = float(tmpList[1][3:])
+                            if 120.143344802625 < longitude < 120.31099515462 and 22.9608991322419 < latitude < 23.0722689885349:
+                                unitX = ( (longitude - 120.143344802625) * 102409.09 ) // id + 1
+                                unitY = (latitude - 22.9608991322419) * 110574 // id
+                                row.append(unitY * columnNum + unitX)
+                                all.append(row)
+                    writer.writerows(all)
+            csvoutput.close()
+            csvinput.close()
+            # 轉區塊施工紀錄
+            with open('csv/施工紀錄.csv', 'r', encoding="utf8") as csvinput:
+                with open('csv/區塊施工紀錄_' + str(id) + '公尺.csv', 'w+', encoding='utf8') as csvoutput:
+                    writer = csv.writer(csvoutput, lineterminator='\n')
+                    reader = csv.reader(csvinput)
+                    all = []
+                    row = next(reader)
+                    row.append('splitArea')
+                    all.append(row)
+                    for row in reader:
+                        tmpList = row[8].split(",")
+                        longitude = float(tmpList[0][1:])
+                        latitude = float(tmpList[1][1:-1])
+                        if 120.143344802625 < longitude < 120.31099515462 and 22.9608991322419 < latitude < 23.0722689885349:
+                            unitX = ((longitude - 120.143344802625) * 102409.09) // id + 1
+                            unitY = (latitude - 22.9608991322419) * 110574 // id
+                            row.append(unitY * columnNum + unitX)
+                            all.append(row)
+                    writer.writerows(all)
+            csvoutput.close()
+            csvinput.close()
+        # 由csv的紀錄 轉為不同時間區段的二維分佈
+        # channel_hole 坑洞的二維分佈
+        with open('csv/區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv', 'r', encoding='utf8') as csvinputsecond:
+            reader = csv.reader(csvinputsecond)
+            tmpJson = {} # record count of each splitarea
+            tmpJson["data"] = []
             row = next(reader)
-            row.append('splitArea')
-            all.append(row)
-            for row in reader:
-                if row[9] == "鋪面":
-                    tmpList = row[13].split("X_97")[0].split(" ")
-                    longitude = float(tmpList[0][3:])
-                    latitude = float(tmpList[1][3:])
-                    if 120.143344802625 < longitude < 120.31099515462 and 22.9608991322419 < latitude < 23.0722689885349:
-                        unitX = ( (longitude - 120.143344802625) * 102409.09 ) // id + 1
-                        unitY = (latitude - 22.9608991322419) * 110574 // id
-                        row.append(unitY * columnNum + unitX)
-                        all.append(row)
-            writer.writerows(all)
-    content["downloadURL"] = '區塊坑洞挖掘紀錄_'+str(id)+'公尺.csv'
+            startTime = datetime.datetime(2019,1,7)
+            endTime = startTime + datetime.timedelta(days = 7) # 時間間隔為７天
+            tmpDict = {"startTime" : startTime.strftime("%Y/%m/%d"),
+                       "endTime": endTime.strftime("%Y/%m/%d")}
+            channel_hole = [[0] * int(columnNum)] * int(rowNum)
+            for row in reversed(list(reader)):
+                if startTime < datetime.datetime.strptime(row[2],'%Y/%m/%d %H:%M:%S') < endTime:
+                    colN = int(float(row[15]) % columnNum -1) # 放入channel
+                    rowN = int(float(row[15]) // columnNum)
+                    channel_hole[rowN][colN] += 1
+                else:
+                    if datetime.datetime.strptime(row[2],'%Y/%m/%d %H:%M:%S') < startTime:
+                        continue
+                    tmpDict["channel_hole"] = channel_hole
+                    tmpJson["data"].append(tmpDict)
+                    startTime = startTime + datetime.timedelta(days= 7) # 時間間隔為７天 (next week)
+                    endTime = endTime + datetime.timedelta(days= 7)
+                    if endTime == datetime.datetime(2019,10,28): # 最後一筆
+                        break
+                    tmpDict = {"startTime": startTime.strftime("%Y/%m/%d"),
+                               "endTime": endTime.strftime("%Y/%m/%d")}
+                    channel_hole = [[0] * int(columnNum)] * int(rowNum)
+            csvinputsecond.close()
+        # channel_roadwork 施工的二維分佈
+        for eachdict in tmpJson["data"]:
+            startTime = datetime.datetime.strptime(eachdict["startTime"],"%Y/%m/%d") - datetime.timedelta(weeks= 52) # 從一年前開始查詢
+            endTime = datetime.datetime.strptime(eachdict["endTime"],"%Y/%m/%d") # 最終結束時間 即坑洞記錄時間
+            '''
+                endTime 要設定為 記錄週的第一天or最後一天
+            '''
+            channel_roadwork = [[0] * int(columnNum)] * int(rowNum)
+            with open('csv/區塊施工紀錄_' + str(id) + '公尺.csv', 'r', encoding='utf8') as csvinputthird:
+                reader_roadwork = csv.reader(csvinputthird)
+                next(reader_roadwork)
+                for row in reader_roadwork:
+                    if startTime < datetime.datetime.strptime(row[3],"%Y.%m.%d"):
+                        if datetime.datetime.strptime(row[3],"%Y.%m.%d") > endTime:
+                            break
+                        colN = int(float(row[9]) % columnNum - 1)  # 放入channel
+                        rowN = int(float(row[9]) // columnNum)
+                        channel_roadwork[rowN][colN] += 1
+                    else:
+                        continue
+                eachdict["channel_roadwork"] = channel_roadwork
+        # 人口密度的二維分佈
+        population_density = [[0] * int(columnNum)] * int(rowNum)
+        PD_forArea = {"中西區":12526, "北區":12608, "東區":13864, "南區":4575, "安南區":1811, "永康區":5852, "安平區":6061, "仁德":1498, "新化":697, "歸仁":1220, "default": 8185}
+        with open('csv/區塊坑洞挖掘紀錄_' + str(id) + '公尺.csv', 'r', encoding='utf8') as csvinputfourth:
+            reader_populationDensity = csv.reader(csvinputfourth)
+            next(reader_populationDensity)
+            for row in reader_populationDensity:
+                colN = int(float(row[15]) % columnNum - 1)  # 放入channel
+                rowN = int(float(row[15]) // columnNum)
+                if population_density[rowN][colN] == 0:
+                    if row[8] in PD_forArea:
+                        population_density[rowN][colN] = PD_forArea[row[8]]
+            for i in range(int(rowNum)):
+                for j in range(int(columnNum)):
+                    if population_density[i][j] == 0:
+                        population_density[i][j] = PD_forArea["default"]
+            csvinputfourth.close()
+        tmpJson["population_density"] = population_density
+        content["json"] = tmpJson
+        with open('csv/區塊坑洞挖掘與施工紀錄_'+str(id)+'公尺.json', 'w+') as outfile:
+            json.dump(tmpJson, outfile)
+    content["downloadURL"] = '區塊坑洞挖掘與施工紀錄_'+str(id)+'公尺.json'
     return render(request,"downloadData.html",content)
