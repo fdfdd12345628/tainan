@@ -243,12 +243,15 @@ def downloadSplitData(request, id):
             endTime = startTime + datetime.timedelta(days = 7) # 時間間隔為７天
             tmpDict = {"startTime" : startTime.strftime("%Y/%m/%d"),
                        "endTime": endTime.strftime("%Y/%m/%d")}
-            channel_hole = [[0] * int(columnNum)] * int(rowNum)
+            #channel_hole = [[0] * int(columnNum)] * int(rowNum)
+            channel_hole = [[0 for x in range(int(columnNum))] for y in range(int(rowNum))]
             for row in reversed(list(reader)):
                 if startTime < datetime.datetime.strptime(row[2],'%Y/%m/%d %H:%M:%S') < endTime:
                     colN = int(float(row[15]) % columnNum -1) # 放入channel
                     rowN = int(float(row[15]) // columnNum)
                     channel_hole[rowN][colN] += 1
+                    if startTime == datetime.datetime(2019,1,7):
+                        print(channel_hole)
                 else:
                     if datetime.datetime.strptime(row[2],'%Y/%m/%d %H:%M:%S') < startTime:
                         continue
@@ -260,7 +263,7 @@ def downloadSplitData(request, id):
                         break
                     tmpDict = {"startTime": startTime.strftime("%Y/%m/%d"),
                                "endTime": endTime.strftime("%Y/%m/%d")}
-                    channel_hole = [[0] * int(columnNum)] * int(rowNum)
+                    channel_hole = [[0 for x in range(int(columnNum))] for y in range(int(rowNum))]
             csvinputsecond.close()
         # channel_roadwork 施工的二維分佈
         for eachdict in tmpJson["data"]:
@@ -269,7 +272,7 @@ def downloadSplitData(request, id):
             '''
                 endTime 要設定為 記錄週的第一天or最後一天
             '''
-            channel_roadwork = [[0] * int(columnNum)] * int(rowNum)
+            channel_roadwork = [[0 for x in range(int(columnNum))] for y in range(int(rowNum))]
             with open('csv/區塊施工紀錄_' + str(id) + '公尺.csv', 'r', encoding='utf8') as csvinputthird:
                 reader_roadwork = csv.reader(csvinputthird)
                 next(reader_roadwork)
@@ -287,7 +290,7 @@ def downloadSplitData(request, id):
                         continue
                 eachdict["channel_roadwork"] = channel_roadwork
         # 人口密度的二維分佈
-        population_density = [[0] * int(columnNum)] * int(rowNum)
+        population_density = [[0 for x in range(int(columnNum))] for y in range(int(rowNum))]
         PD_forArea = {"中西區":12526, "北區":12608, "東區":13864, "南區":4575, "安南區":1811, "永康區":5852, "安平區":6061, "仁德":1498, "新化":697, "歸仁":1220, "default": 8185}
         with open('csv/區塊坑洞挖掘紀錄_' + str(id) + '公尺.csv', 'r', encoding='utf8') as csvinputfourth:
             reader_populationDensity = csv.reader(csvinputfourth)
