@@ -4,11 +4,12 @@ import urllib,json
 import csv
 import os
 import datetime
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.utils.timezone import make_aware
-from .models import weather,hole
+from .models import weather,hole,examination
 from .water import water
-
+from django.conf import settings
+import base64
 # Create your views here.
 def googleMap(request):
     content = {}
@@ -131,6 +132,9 @@ def displayHole(request):
     content = {}
     content["towns"] = [ele['town'] for ele in hole.objects.values('town').distinct()]
     content["reason"] = [ele['reason'] for ele in hole.objects.values('reason').distinct()]
+    holeList = hole.objects.all()
+    holeList = [str(ele.positionLat) + "," + str(ele.positionLon) + "," + str(ele.id) for ele in holeList]
+    content["holeList"] = holeList
     return render(request,"displayHole.html",content)
 
 '''
@@ -250,8 +254,6 @@ def downloadSplitData(request, id):
                     colN = int(float(row[15]) % columnNum -1) # 放入channel
                     rowN = int(float(row[15]) // columnNum)
                     channel_hole[rowN][colN] += 1
-                    if startTime == datetime.datetime(2019,1,7):
-                        print(channel_hole)
                 else:
                     if datetime.datetime.strptime(row[2],'%Y/%m/%d %H:%M:%S') < startTime:
                         continue
@@ -312,3 +314,63 @@ def downloadSplitData(request, id):
             json.dump(tmpJson, outfile)
     content["downloadURL"] = '區塊坑洞挖掘與施工紀錄_'+str(id)+'公尺.json'
     return render(request,"downloadData.html",content)
+
+def showingPath(request):
+    if request.method == "GET":
+        meter = "1000"
+        route = [72,73,74,58,57,53,47]
+
+        content = {}
+        with open('csv/區塊施工紀錄_' + meter + '公尺.csv', 'r', encoding="utf8") as csvinput:
+            reader = csv.reader(csvinput)
+            readerDic = {}
+            row = next(reader)
+            for row in reader:
+                if row[9] in readerDic:
+                    readerDic[int(float(row[9]))].append([float(row[8].split(",")[0][1:]),float(row[8].split(",")[1][1:-1])])
+                else:
+                    readerDic[int(float(row[9]))] = []
+                    readerDic[int(float(row[9]))].append([float(row[8].split(",")[0][1:]),float(row[8].split(",")[1][1:-1])])
+        routeList = []
+        for spot in route:
+            if spot in readerDic:
+                routeList.append(readerDic[spot][0])
+        content["routeList"] = routeList
+        content["routeListLen"] = len(routeList)-1
+        print(routeList)
+        return render(request,"map.html",content)
+    elif request.method == "POST":
+        # create data in examination class
+        # fields of positionLon, positionLat, examinationTime, photoURL
+        content ={}
+        try:
+            positionLon = float(request.POST.get("positionLon","120.2224724"))
+            positionLat = float(request.POST.get("positionLat","22.996805"))
+            saveExamination = examination.objects.create(positionLon=positionLon,positionLat=positionLat)
+            saveExamination.save()
+            photoByte64 = request.POST.get("photoByte64", "")
+            if photoByte64 != "":
+                photoByte64 = photoByte64.split(",")[1]
+                photoURL = "."+settings.MEDIA_URL+str(saveExamination.id)+".png"
+                saveExamination.photoURL=photoURL
+                saveExamination.save()
+                imgdata = base64.b64decode(photoByte64)
+                with open(photoURL, 'wb') as f:
+                    f.write(imgdata)
+            return JsonResponse(content)
+        except:
+            return HttpResponse(500)
+
+def pastMap(request):
+    content={}
+    currentTime=datetime.datetime.today()
+    currentTimeYest = currentTime - datetime.timedelta(days=1)
+    startTime = make_aware(datetime.datetime(currentTimeYest.year,currentTimeYest.month,currentTimeYest.day,16,0,0))
+    endTime = make_aware(datetime.datetime(currentTime.year,currentTime.month,currentTime.day,16,0,0))
+    examinationSet = examination.objects.filter(examinationTime__range=(startTime,endTime))
+    examinationList  =[ {"positionLon": ele.positionLon,
+                         "positionLat": ele.positionLat,
+                         "examinationTime": (ele.examinationTime + datetime.timedelta(hours=8)).strftime("%Y/%m/%d %H-%M-%S"),
+                         "photoURL": ele.photoURL} for ele in examinationSet ]
+    content["examinationList"] = examinationList
+    return render(request,"pastMap.html",content)
