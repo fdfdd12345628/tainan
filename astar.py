@@ -63,8 +63,9 @@ def d(data, came_from, current_node, target_node, start_node):
 
     return result
 
+
 def pre(data):
-    data=data[1:-1, 1:-1]
+    data = data[1:-1, 1:-1]
     return data
     pass
 
@@ -74,9 +75,9 @@ def pre(data):
 
 
 def a_star(data, start=None, end=None, blocks=0):
-    data=pre(data)
+    data = pre(data)
     if start is None:
-        start=np.argmax(data)
+        start = np.argmax(data)
     g_score = np.ones(data.shape) * 1000
     f_score = np.ones(data.shape) * 1000
     open_set = {start: 0}
@@ -99,7 +100,9 @@ def a_star(data, start=None, end=None, blocks=0):
         if end != None:
             if current == end:
                 path = construct(came_from_list, end, start)
-
+                result = np.zeros(data.shape, dtype=int)
+                for i in path:
+                    result.flat[i] = 1
                 return construct(came_from_list, end, start)  # came_from_list
         else:
             # with np.argmin(g_score) as end:
@@ -152,8 +155,8 @@ if __name__ == '__main__':
     # print(test)
     with open('區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
         raw = Image.open('map_pred1.bmp')
-        test=np.array(raw)
-        test=test[:,:,0]
+        test = np.array(raw)
+        test = test[:, :, 0]
         # json_data = json.loads(raw)
     # print(json_data)
     # test = np.array(json_data['data'][15]['channel_hole'])
@@ -163,7 +166,7 @@ if __name__ == '__main__':
             break'''
     path = a_star(test, blocks=15)
     print(path)
-    test=test[1:-1, 1:-1]
+    test = test[1:-1, 1:-1]
     path_array = np.zeros(test.shape)
     for i in path:
         path_array.flat[i] = 1
