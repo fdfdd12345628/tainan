@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined"
+      rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<div id="map" ></div>
+<div id="bottomNav">
+    <a id="navigationHref" href="https://www.google.com/maps/dir/?api=1">
+    <div class="bottomNavItem">
+        <!--img src="https://image.flaticon.com/icons/svg/104/104106.svg" alt="google map"-->
+        <i id="navigationIcon" class="material-icons-outlined md-dark">navigation</i>
+        <label for="navigationIcon">Navigation</label>
+    </div>
+    </a>
+    <div class="bottomNavItem" onclick="photoModal()">
+        <!--img src="https://image.flaticon.com/icons/svg/25/25315.svg" alt="photo"-->
+        <i id="cameraIcon"class="material-icons-outlined md-dark">camera_alt</i>
+        <label for="cameraIcon">Photo</label>
+    </div>
+    <div class="bottomNavItem">
+        <!--img src="https://image.flaticon.com/icons/svg/1/1078.svg" alt="date"-->
+        <i id="dateIcon" class="material-icons-outlined md-dark">date_range</i>
+        <label for="dateIcon">Date</label>
+    </div>
+</div>
+<div class="ui modal">
+  <div class="header">Header</div>
+  <div class="content">
+    <p></p>
+  </div>
+  <div class="actions">
+    <div class="ui approve button">Approve</div>
+    <div class="ui button">Neutral</div>
+    <div class="ui cancel button">Cancel</div>
+  </div>
+</div>
+</body>
+<script>
+    function initMap() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: {lat: 22.9988465,lng: 120.2173261 },
+            scaleControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            styles: [
+  {
+    "featureType": "administrative",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  }
+]
+        });
+        directionsDisplay.setMap(map);
+        console.log('map');
+    }
+    setTimeout(function () {
+        mapRoute()
+        {% for route in LowWater%}
+            //mapLayer("{{ route }}","#a932ff")
+        {% endfor %}
+        {% for route in MidWater%}
+            //mapLayer("{{ route }}","#ff36e9")
+        {% endfor %}
+        {% for route in HighWater%}
+            //mapLayer("{{ route }}","#ff3535")
+        {% endfor %}
+        {% for route in THighWater%}
+            //mapLayer("{{ route }}","#402118")
+        {% endfor %}
+        {% for holePosition in hole %}
+            //mapMarker('{{ holePosition }}')
+        {% endfor %}
+        //mapMarker("23.01562292989273,120.1995082298927")
+        //mapMarker("23.01292327010728,120.1968085701073")
+        //mapMarker("23.0142731,120.1981584")
+    },100)
+function mapLayer(route,color) {
+    var data = [];
+    var latlonSplit = route.split(' ')
+    for (var element in latlonSplit) {
+
+        data.push({
+            lat: parseFloat(latlonSplit[element].split(',')[0], 10),
+            lng: parseFloat(latlonSplit[element].split(',')[1], 10)
+        })
+    }
+    var tmpLayer = new google.maps.Data({map:map});
+    tmpLayer.setStyle({
+        fillColor: color,
+        strokeWeight: 1
+    });
+    tmpLayer.add({geometry: new google.maps.Data.Polygon([data])})
+}
+function mapLine(route,color) {
+    var data = [];
+    var latlonSplit = route.split(' ')
+    for (var element in latlonSplit) {
+
+        data.push({
+            lat: parseFloat(latlonSplit[element].split(',')[0], 10),
+            lng: parseFloat(latlonSplit[element].split(',')[1], 10)
+        })
+    }
+    var flightPath = new google.maps.Polyline({
+        path: data,
+        geodesic: true,
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 1
+    });
+    flightPath.setMap(map);
+}
+function mapMarker(pos) {
+    var icon = {
+        url: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png',
+        scaledSize: new google.maps.Size(15, 15), // scaled size
+        origin: new google.maps.Point(0,0), // origin
+        anchor: new google.maps.Point(0, 0) // anchor
+    };
+    latlon = new google.maps.LatLng({lat: parseFloat(pos.split(",")[0],10), lng: parseFloat(pos.split(",")[1],10)})
+    var marker = new google.maps.Marker({
+        position: latlon,
+        map: map,
+        icon:icon
+    });
+    marker.setMap(map)
+}
+function mapRoute() {
+    var routeHref ="https://www.google.com/maps/dir/?api=1"
+    routeHref+="&origin="
+    routeHref+={{ routeList }}[0].reverse().toString()
+    var waypoints = [];
+    routeHref+="&waypoints="
+    {% for pos in routeList %}
+        if({{ forloop.counter0 }} ==0 || {{ forloop.counter0 }} == {{ routeListLen }}){
+            console.log("ignore")
+        }else{
+        routeHref +={{ pos }}.reverse().toString()
+        routeHref +="|"
+    console.log({{ pos }})
+        waypoints.push({
+            location: new google.maps.LatLng({{ pos }}[1], {{ pos }}[0]),
+            stopover: true
+        })
+    }
+
+    {% endfor %}
+    routeHref = routeHref.substring(0, routeHref.length - 1);
+    // which is going to remove the redundant '|' of end
+    routeHref +="&destination="
+    routeHref +={{ routeList }}[{{ routeListLen }}].reverse().toString()
+        console.log(routeHref)
+    $("#navigationHref").attr("href",routeHref);
+    console.log(waypoints)
+    var request = {
+        origin: new google.maps.LatLng({{ routeList }}[0][1], {{ routeList }}[0][0]),
+        destination: new google.maps.LatLng({{ routeList }}[{{ routeListLen }}][1], {{ routeList }}[{{ routeListLen }}][0]),
+        waypoints: waypoints, //an array of waypoints
+        optimizeWaypoints: false, //set to true if you want google to determine the shortest route or false to use the order specified.
+        //travelMode: google.maps.DirectionsTravelMode.DRIVING
+        travelMode: 'WALKING',
+    };
+    directionsService.route(request, function (response, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+        }else{
+            console.log("error")
+        }
+    });
+
+}
+</script>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
+</html>
+<style>
+    #map{
+        height: 90vh;
+        width: 100vw;
+        position: absolute;
+        left: 0;
+        top:0;
+    }
+    #bottomNav{
+        height: 10vh;
+        width: 100vw;
+        background: #f9f8f6;
+        position: absolute;
+        border-top: 1pt solid;
+        border-color: #575757;
+        bottom: 0;
+        left: 0;
+    }
+    .bottomNavItem{
+        height: 100%;
+        width:33%;
+        float: left;
+        margin-top: 0.5vh;
+        text-align: center;
+        vertical-align: middle;
+        display: inline-block;
+        color: #575757;
+        cursor: pointer;
+    }
+    .bottomNavItem > i{
+        font-size: 6vh;
+        vertical-align: middle;
+        text-align: center;
+        border-radius: 10vh;
+        display: block;
+    }
+    .bottomNavItem > label{
+        font-size: 2vh;
+        vertical-align: bottom;
+    }
+
+</style>

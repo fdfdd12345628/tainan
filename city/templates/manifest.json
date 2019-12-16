@@ -1,0 +1,31 @@
+{
+"name": "Tainan",
+"short_name": "Tainan",
+"description": "demo pwa with django",
+"start_url": "/displayHole",
+"scope": ".",
+"background_color": "#EEE",
+"theme_color": "#4A148C",
+"display": "standalone",
+"orientation": "portrait-primary",
+"dir":"ltr",
+"icons": [
+  {
+    "src": "./static/src/worldwide-72.png",
+    "type": "image/png",
+    "sizes": "72x72"
+  },{
+    "src": "./static/src/worldwide-144.png",
+    "type": "image/png",
+    "sizes": "144x144"
+  },{
+    "src": "./static/src/worldwide-256.png",
+    "type": "image/png",
+    "sizes": "256x256"
+  },{
+    "src": "./static/src/worldwide-512.png",
+    "type": "image/png",
+    "sizes": "512x512"
+  }
+ ]
+}

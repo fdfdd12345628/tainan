@@ -24,3 +24,13 @@ class hole(models.Model):
     reason = models.CharField(max_length=50,blank=True)
     address = models.CharField(max_length=100,blank=True)
     flood = models.IntegerField()
+
+class examination(models.Model):
+    '''
+    巡視結果
+    '''
+    positionLon = models.FloatField()
+    positionLat = models.FloatField()
+    examinationTime = models.DateTimeField(auto_now=True)
+    photoURL = models.CharField(max_length=100,blank=True)
+
