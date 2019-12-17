@@ -24,7 +24,7 @@
 <body>
 <div id="map" ></div>
 <div id="bottomNav">
-    <a id="navigationHref" href="https://www.google.com/maps/dir/?api=1">
+    <a id="navigationHref" href="./showingPath">
         <div class="bottomNavItem">
             <!--img src="https://image.flaticon.com/icons/svg/104/104106.svg" alt="google map"-->
             <i id="navigationIcon" class="material-icons-outlined md-dark">location_searching</i>
@@ -37,7 +37,7 @@
         <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
         <label for="dateIcon">Date</label>
     </div>
-    <a href="../pastMap">
+    <a href="../statistic">
         <div class="bottomNavItem" >
             <i id="recordIcon"class="material-icons-outlined md-dark">show_chart</i>
             <label for="recordIcon">Statistic</label>
@@ -54,7 +54,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" data-toggle="datepicker">
+                <input type="text" class="form-control" data-toggle="datepicker" id="date">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button>
@@ -252,6 +252,57 @@
     function closeModal() {
         $(".modal").modal("hide")
     }
+    $(document).on("click","#dateSendButton",function () {
+        console.log($("#date").val())
+        $.ajax({
+            type: 'POST',
+            url: '',
+            data: {
+                date:$("#date").val(),
+                'csrfmiddlewaretoken': csrftoken,
+            },
+            dataType: 'json',
+            success: function(content){
+                removeMarkers();
+                photoURLList = []
+                positionList = []
+                timeList=[]
+                for(var i = 0; i<content["examinationList"].length;i++){
+                    if(i == 0){
+                        latlon = new google.maps.LatLng({lat:content["examinationList"][i].positionLat,lng:content["examinationList"][i].positionLon});
+                        map.setCenter(latlon);
+                    }
+                        photoURLList.push(content["examinationList"][i].photoURL)
+                        positionList.push(content["examinationList"][i].positionLat+","+content["examinationList"][i].positionLon)
+                        timeList.push(content["examinationList"][i]["examinationTime"])
+                        mapMarker(content["examinationList"][i].positionLat+","+content["examinationList"][i].positionLon+","+i.toString())
+                }
+            },error: function (jqXHR, textStatus, errorThrown) {
+                if(jqXHR.status === 413) {
+                    alert("檔案過大")
+                    console.log("Error 413: Request entity too large. Splitting the data into partitions...");
+                }
+            },
+        })
+    })
+</script>
+<script>
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
 </script>
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
