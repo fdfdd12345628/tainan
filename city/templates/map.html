@@ -17,8 +17,8 @@
 
     <!-- Bootstrap Js -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="./static/datepicker.css">
-    <script src="./static/datepicker.js"></script>
+    <link rel="stylesheet" href="../static/datepicker.css">
+    <script src="../static/datepicker.js"></script>
 
     <title>坑洞巡查預測路線</title>
 </head>
@@ -37,7 +37,7 @@
         <i id="cameraIcon"class="material-icons-outlined md-dark">camera_alt</i>
         <label for="cameraIcon">Photo</label>
     </div>
-    <div class="bottomNavItem">
+    <div class="bottomNavItem" id="dateNavItem">
         <!--img src="https://image.flaticon.com/icons/svg/1/1078.svg" alt="date"-->
         <i id="dateIcon" class="material-icons-outlined md-dark">date_range</i>
         <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
@@ -95,7 +95,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" data-toggle="datepicker">
+                <input type="text" class="form-control" data-toggle="datepicker" id="date">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button>
@@ -237,7 +237,6 @@
                 stopover: true
             })
         }
-
         {% endfor %}
         routeHref = routeHref.substring(0, routeHref.length - 1);
         // which is going to remove the redundant '|' of end
@@ -253,14 +252,13 @@
             //travelMode: google.maps.DirectionsTravelMode.DRIVING
             travelMode: 'WALKING',
         };
-        directionsService.route(request, function (response, status) {
+         directionsService.route(request, function (response, status) {
             if (status == google.maps.DirectionsStatus.OK) {
                 directionsDisplay.setDirections(response);
             }else{
                 console.log("error")
             }
         });
-
     }
 
     /*
@@ -310,7 +308,7 @@
         $(document).on("click",".header > i",function () {
             $("#photoModal").modal('hide');
         })
-        $(document).on("click","#dateIcon",function (e) {
+        $(document).on("click","#dateNavItem",function (e) {
             $("#dataButton").click()
         })
     })
@@ -352,6 +350,7 @@
                 photoByte64 : photoByte64,
                 positionLon : positionLon,
                 positionLat : positionLat,
+                type:"uploadPhoto",
                 'csrfmiddlewaretoken': csrftoken,
             },
             dataType: 'json',
@@ -372,7 +371,73 @@
             zIndex: 2048,
         });
     });
+    $(document).on("click","#dateSendButton",function () {
+        console.log($("#date").val())
+        var dateInput = $("#date").val().split("/")
+        window.location.replace("./"+dateInput[2]+dateInput[0]+dateInput[1]);
+        /*
+        $.ajax({
+            type: 'POST',
+            url: '',
+            data: {
+                date:$("#date").val(),
+                type:"chooseDate",
+                'csrfmiddlewaretoken': csrftoken,
+            },
+            dataType: 'json',
+            success: function(content){
+                //directionsDisplay.setMap(null);
+                initMap()
+                directionsDisplay.setMap(map);
+                console.log(content["routeList"])
+                var routeHref ="https://www.google.com/maps/dir/?api=1";
+                routeHref+="&origin=";
+                routeHref+=content["routeList"][0].reverse().toString();
+                var waypoints = [];
+                routeHref+="&waypoints=";
+                for(var i=0;i<=content["routeListLen"];i++){
+                    if(i===0 || i===content["routeListLen"]){
+                        console.log("ignore");
+                    }else{
+                        routeHref +=content["routeList"][i].reverse().toString()
+                        routeHref +="|"
+                        waypoints.push({
+                            location: new google.maps.LatLng(content["routeList"][i][1], content["routeList"][i][0]),
+                            stopover: true
+                        })
+                    }
+                }
 
+                routeHref = routeHref.substring(0, routeHref.length - 1);
+                // which is going to remove the redundant '|' of end
+                routeHref +="&destination="
+                routeHref +=content["routeList"][content["routeListLen"]].reverse().toString()
+                $("#navigationHref").attr("href",routeHref);
+                var request = {
+                    origin: new google.maps.LatLng(content["routeList"][0][1], content["routeList"][0][0]),
+                    destination: new google.maps.LatLng(content["routeList"][content["routeListLen"]][1], content["routeList"][content["routeListLen"]][0]),
+                    waypoints: waypoints, //an array of waypoints
+                    optimizeWaypoints: false, //set to true if you want google to determine the shortest route or false to use the order specified.
+                    travelMode: 'WALKING',
+                };
+                directionsService.route(request, function (response, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsDisplay.setDirections(response);
+                    }else{
+                        console.log(status.stack)
+                        console.log(status)
+                    }
+                });
+            },error: function (jqXHR, textStatus, errorThrown) {
+                if(jqXHR.status === 413) {
+                    alert("檔案過大")
+                    console.log("Error 413: Request entity too large. Splitting the data into partitions...");
+                }
+            },
+        })
+
+         */
+    })
 </script>
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>

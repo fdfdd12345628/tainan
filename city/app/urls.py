@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import googleMap, processDataWeather, processDataHole, displayHole, searchHole, searchHoleDetail, processDataWeatherPredict, downloadSplitData, showingPath, pastMap
+from .views import googleMap, processDataWeather, processDataHole, displayHole, searchHole, searchHoleDetail, processDataWeatherPredict, downloadSplitData, showingPath, pastMap, showingPathAuto, statistic
 from django.views.generic.base import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -12,7 +12,9 @@ urlpatterns = [
     path('displayHole',displayHole),
     path('searchHole', searchHole),
     path('searchHoleDetail', searchHoleDetail),
-    path('showingPath', showingPath),
+    path('showingPath/<int:date>', showingPath),
+    path('showingPath', showingPathAuto),
+    path('statistic',statistic),
     path('downloadSplitData/<int:id>', downloadSplitData),
     path('pastMap',pastMap),
     path('serviceworker', (TemplateView.as_view(

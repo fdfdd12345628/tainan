@@ -4,12 +4,15 @@ import urllib,json
 import csv
 import os
 import datetime
-from django.http import JsonResponse,HttpResponse
+from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
 from django.utils.timezone import make_aware
 from .models import weather,hole,examination
 from .water import water
 from django.conf import settings
 import base64
+from .app import *
+from django.shortcuts import redirect
+
 # Create your views here.
 def googleMap(request):
     content = {}
@@ -315,11 +318,31 @@ def downloadSplitData(request, id):
     content["downloadURL"] = '區塊坑洞挖掘與施工紀錄_'+str(id)+'公尺.json'
     return render(request,"downloadData.html",content)
 
-def showingPath(request):
+
+def showingPathAuto(request):
+    t = datetime.datetime.today()
+    date = int(str(t.year)+str(t.month)+str(t.day))
+    #showingPath(request,date)
+    return HttpResponseRedirect('showingPath/'+str(date))
+
+
+def showingPath(request,date):
     if request.method == "GET":
         meter = "1000"
-        route = [72,73,74,58,57,53,47]
-
+        '''
+        if date == 20191216:
+            route = [72,73,74,75,60,59,58,57]
+        else:
+            route =[75,60,59,58,57]
+        '''
+        #print(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d"),"%Y/%m/%d"))
+        astarMapRaw = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+        astarMap = []
+        for ele in astarMapRaw:
+            eleRow = ele // 16
+            eleCol = ele % 16
+            astarMap.append(eleCol+eleRow*18)
+        route = astarMap
         content = {}
         with open('csv/區塊施工紀錄_' + meter + '公尺.csv', 'r', encoding="utf8") as csvinput:
             reader = csv.reader(csvinput)
@@ -343,34 +366,56 @@ def showingPath(request):
         # create data in examination class
         # fields of positionLon, positionLat, examinationTime, photoURL
         content ={}
-        try:
-            positionLon = float(request.POST.get("positionLon","120.2224724"))
-            positionLat = float(request.POST.get("positionLat","22.996805"))
-            saveExamination = examination.objects.create(positionLon=positionLon,positionLat=positionLat)
-            saveExamination.save()
-            photoByte64 = request.POST.get("photoByte64", "")
-            if photoByte64 != "":
-                photoByte64 = photoByte64.split(",")[1]
-                photoURL = "."+settings.MEDIA_URL+str(saveExamination.id)+".png"
-                saveExamination.photoURL=photoURL
+        if(request.POST.get("type","") == "uploadPhoto"):
+            try:
+                positionLon = float(request.POST.get("positionLon","120.2224724"))
+                positionLat = float(request.POST.get("positionLat","22.996805"))
+                saveExamination = examination.objects.create(positionLon=positionLon,positionLat=positionLat)
                 saveExamination.save()
-                imgdata = base64.b64decode(photoByte64)
-                with open(photoURL, 'wb') as f:
-                    f.write(imgdata)
-            return JsonResponse(content)
-        except:
-            return HttpResponse(500)
+                photoByte64 = request.POST.get("photoByte64", "")
+                if photoByte64 != "":
+                    photoByte64 = photoByte64.split(",")[1]
+                    photoURL = "."+settings.MEDIA_URL+str(saveExamination.id)+".png"
+                    saveExamination.photoURL=photoURL
+                    saveExamination.save()
+                    imgdata = base64.b64decode(photoByte64)
+                    with open(photoURL, 'wb') as f:
+                        f.write(imgdata)
+                return JsonResponse(content)
+            except:
+                return HttpResponse(500)
+
+
 
 def pastMap(request):
-    content={}
-    currentTime=datetime.datetime.today()
-    currentTimeYest = currentTime - datetime.timedelta(days=1)
-    startTime = make_aware(datetime.datetime(currentTimeYest.year,currentTimeYest.month,currentTimeYest.day,16,0,0))
-    endTime = make_aware(datetime.datetime(currentTime.year,currentTime.month,currentTime.day,16,0,0))
-    examinationSet = examination.objects.filter(examinationTime__range=(startTime,endTime))
-    examinationList  =[ {"positionLon": ele.positionLon,
-                         "positionLat": ele.positionLat,
-                         "examinationTime": (ele.examinationTime + datetime.timedelta(hours=8)).strftime("%Y/%m/%d %H-%M-%S"),
-                         "photoURL": ele.photoURL} for ele in examinationSet ]
-    content["examinationList"] = examinationList
-    return render(request,"pastMap.html",content)
+    if request.method == "GET":
+        content={}
+        currentTime=datetime.datetime.today()
+        currentTimeYest = currentTime - datetime.timedelta(days=1)
+        startTime = make_aware(datetime.datetime(currentTimeYest.year,currentTimeYest.month,currentTimeYest.day,16,0,0))
+        endTime = make_aware(datetime.datetime(currentTime.year,currentTime.month,currentTime.day,16,0,0))
+        examinationSet = examination.objects.filter(examinationTime__range=(startTime,endTime))
+        examinationList  =[ {"positionLon": ele.positionLon,
+                             "positionLat": ele.positionLat,
+                             "examinationTime": (ele.examinationTime + datetime.timedelta(hours=8)).strftime("%Y/%m/%d %H-%M-%S"),
+                             "photoURL": ele.photoURL} for ele in examinationSet ]
+        content["examinationList"] = examinationList
+        return render(request,"pastMap.html",content)
+    elif request.method == "POST":
+        content={}
+        requestDate = request.POST.get("date","")
+        currentTime = datetime.datetime.strptime(requestDate,"%m/%d/%Y")
+        currentTimeYest = currentTime - datetime.timedelta(days=1)
+        startTime = make_aware(datetime.datetime(currentTimeYest.year, currentTimeYest.month, currentTimeYest.day, 16, 0, 0))
+        endTime = make_aware(datetime.datetime(currentTime.year, currentTime.month, currentTime.day, 16, 0, 0))
+        examinationSet = examination.objects.filter(examinationTime__range=(startTime, endTime))
+        examinationList = [{"positionLon": ele.positionLon,
+                        "positionLat": ele.positionLat,
+                        "examinationTime": (ele.examinationTime + datetime.timedelta(hours=8)).strftime(
+                            "%Y/%m/%d %H-%M-%S"),
+                        "photoURL": ele.photoURL} for ele in examinationSet]
+        content["examinationList"] = examinationList
+        return JsonResponse(content)
+
+def statistic(request):
+    return render(request,"statistic.html")
