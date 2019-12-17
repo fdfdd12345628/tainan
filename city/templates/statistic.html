@@ -10,18 +10,15 @@
             integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
             crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-
-    <!-- Bootstrap Js -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="./static/datepicker.css">
-    <script src="./static/datepicker.js"></script>
     <title>坑洞紀錄</title>
 </head>
 <body>
+<div class="iframePlace">
+    <iframe src="https://hasdoel.ml/grafana/d-solo/7ahb710Zz/new-dashboard-copy?orgId=1&from=1568822914676&to=1576598914676&panelId=2" class="statistics" frameborder="0" id="iframeFirst"></iframe>
+    <iframe src="https://hasdoel.ml/grafana/d-solo/7ahb710Zz/new-dashboard-copy?orgId=1&from=1568822905250&to=1576598905250&panelId=8" class="statistics" frameborder="0" id="iframeSecond"></iframe>
+</div>
 <div id="bottomNav">
     <a id="navigationHref" href="./showingPath">
         <div class="bottomNavItem">
@@ -36,12 +33,62 @@
         <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
         <label for="dateIcon">Date</label>
     </div>
-    <a href="../statistic">
+    <a href="../pastMap">
         <div class="bottomNavItem" >
-            <i id="recordIcon"class="material-icons-outlined md-dark">show_chart</i>
-            <label for="recordIcon">Statistic</label>
+            <i id="recordIcon"class="material-icons-outlined md-dark">insert_chart</i>
+            <label for="recordIcon">Record</label>
         </div>
     </a>
 </div>
 </body>
 </html>
+<script>
+</script>
+<style>
+    body{
+        background: #eeeeee;
+    }
+    #bottomNav{
+        height: 10vh;
+        width: 100vw;
+        background: #f9f8f6;
+        position: fixed;
+        border-top: 1pt solid;
+        border-color: #575757;
+        bottom: 0;
+        left: 0;
+    }
+    .bottomNavItem{
+        height: 100%;
+        width:33%;
+        float: left;
+        margin-top: 0.5vh;
+        text-align: center;
+        vertical-align: middle;
+        display: inline-block;
+        color: #575757;
+        cursor: pointer;
+    }
+    .bottomNavItem > i{
+        font-size: 6vh;
+        vertical-align: middle;
+        text-align: center;
+        border-radius: 10vh;
+        display: block;
+    }
+    .bottomNavItem > label{
+        font-size: 2vh;
+        vertical-align: bottom;
+    }
+    .iframePlace{
+        height: 100vh;
+        width:100%;
+        margin-bottom: 10vh;
+    }
+    .statistics{
+        width: 80vw;
+        height: 40vh;
+        margin: 5vh 10vw 0 10vw;
+    }
+
+</style>

@@ -153,7 +153,7 @@ if __name__ == '__main__':
     # test=np.reshape(test, (10, 10))
     # test=pre(test)
     # print(test)
-    with open('區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
+    with open('csv/區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
         raw = Image.open('map_pred1.bmp')
         test = np.array(raw)
         test = test[:, :, 0]
@@ -165,6 +165,7 @@ if __name__ == '__main__':
         if path is not None:
             break'''
     path = a_star(test, blocks=15)
+    print(path)
     test = test[1:-1, 1:-1]
     path_array = np.zeros(test.shape)
     for i in path:

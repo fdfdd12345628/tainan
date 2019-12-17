@@ -337,6 +337,7 @@ def showingPath(request,date):
         '''
         #print(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d"),"%Y/%m/%d"))
         astarMapRaw = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+        print(astarMapRaw)
         astarMap = []
         for ele in astarMapRaw:
             eleRow = ele // 16
