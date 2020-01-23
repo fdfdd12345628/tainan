@@ -38,9 +38,9 @@ def d(data, came_from, current_node, target_node, start_node):
     end_x = target_node // data.shape[1]
     end_y = target_node % data.shape[1]
     result = -(data.flat[target_node] * 1)
-    print(data.flat[target_node])
-    print(data.flat[current_node])
-    result += math.sqrt((start_x - end_x) ** 2 + (start_y - end_y) ** 2)
+    #print(data.flat[target_node])
+    #print(data.flat[current_node])
+    # result += math.sqrt((start_x - end_x) ** 2 + (start_y - end_y) ** 2)
     path = construct(came_from, current_node, start_node)
     # child_node=0
     for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares

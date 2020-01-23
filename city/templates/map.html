@@ -57,34 +57,34 @@
     <div class="modal-dialog" role="document" style="height:0%;">
 
     </div>
-        <div class="header" ><h1>照片</h1>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="uploadClose">
-                <span aria-hidden="true">×</span>
-            </button>
+    <div class="header" ><h1>照片</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="uploadClose">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    <div class="content" style="background: #f5f5f5">
+        <h2>上傳圖片</h2>
+    </div>
+    <div class="methodField">
+        <input id="uploadPicker" type="file" accept="image/*" />
+        <div class="uploadMethod" id="uploadPhotoIcon">
+            <i class="material-icons md-dark">add_a_photo</i>
+            <img src="" alt="photo" id="photoUploaded">
         </div>
-        <div class="content" style="background: #f5f5f5">
-            <h2>上傳圖片</h2>
+    </div>
+    <div class="ui form placeDetail">
+        <div class="autoLocate" onclick="getLocation()">
+            <i class="material-icons md-dark">autorenew</i>
         </div>
-        <div class="methodField">
-            <input id="uploadPicker" type="file" accept="image/*" />
-            <div class="uploadMethod" id="uploadPhotoIcon">
-                <i class="material-icons md-dark">add_a_photo</i>
-                <img src="" alt="photo" id="photoUploaded">
-            </div>
+        <div class="field">
+            <label class="positionLabel">經度</label>
+            <input type="text" id="longitudeInput" placeholder="120.2224724">
         </div>
-        <div class="ui form placeDetail">
-            <div class="autoLocate" onclick="getLocation()">
-                <i class="material-icons md-dark">autorenew</i>
-            </div>
-            <div class="field">
-                <label class="positionLabel">經度</label>
-                <input type="text" id="longitudeInput" placeholder="120.2224724">
-            </div>
-            <div class="field">
-                <label class="positionLabel">緯度</label>
-                <input type="text" id="latitudeInput" placeholder="22.996805">
-            </div>
+        <div class="field">
+            <label class="positionLabel">緯度</label>
+            <input type="text" id="latitudeInput" placeholder="22.996805">
         </div>
+    </div>
     <button type="button" class="btn btn-primary" id="uploadPhotoButton" onclick="postPhoto()">Save</button>
 </div>
 </div>
@@ -221,6 +221,7 @@
     }
     setTimeout(function () {
         mapRoute()
+        mapRectangle()
     },100)
 
     function mapRoute() {
@@ -255,7 +256,7 @@
             //travelMode: google.maps.DirectionsTravelMode.DRIVING
             travelMode: 'WALKING',
         };
-         directionsService.route(request, function (response, status) {
+        directionsService.route(request, function (response, status) {
             if (status == google.maps.DirectionsStatus.OK) {
                 directionsDisplay.setDirections(response);
             }else{
@@ -264,6 +265,53 @@
         });
     }
 
+    function toHexColor(rgb){
+        returnString = "#"
+        for(i =0 ; i < 3 ; i++){
+            if(rgb[i] == 0){
+                returnString+="00"
+            }else if(rgb[i]<16){
+                returnString+="0"
+                returnString+= rgb[i].toString(16)
+            }else{
+                returnString+= rgb[i].toString(16)
+            }
+        }
+        return returnString
+    }
+
+    function mapRectangle() {
+        {% for ele in polyList %}
+            var bounds = {
+                north: {{ ele }}[0][0],
+                south: {{ ele }}[0][1],
+                east: {{ ele }}[0][3],
+                west: {{ ele }}[0][2]
+            };
+
+            // Define a rectangle and set its editable property to true.
+            if({{ ele }}[1][0] == 0){
+                var rectangle = new google.maps.Rectangle({
+                    bounds: bounds,
+                    editable: false,
+                    strokeColor: "#bfbfbf",
+                    fillColor: "#ffffff",
+
+                });
+                rectangle.setMap(map)
+            }else {
+                var rectangle = new google.maps.Rectangle({
+                    bounds: bounds,
+                    editable: false,
+                    strokeColor: "#bfbfbf",
+                    fillColor: toHexColor({{ ele }}[1])
+
+                });
+                rectangle.setMap(map)
+            }
+        {% endfor %}
+
+    }
     /*
     about position
     */
@@ -441,6 +489,7 @@
 
          */
     })
+
 </script>
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>

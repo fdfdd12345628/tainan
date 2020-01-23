@@ -11,6 +11,7 @@ from .water import water
 from django.conf import settings
 import base64
 from .app import *
+import numpy
 from django.shortcuts import redirect
 
 # Create your views here.
@@ -335,17 +336,53 @@ def showingPath(request,date):
         else:
             route =[75,60,59,58,57]
         '''
-        #print(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d"),"%Y/%m/%d"))
-        ##astarMapRaw = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+        if os.path.exists("model_cache/"+str(date)+".json"):
+            with open('model_cache/' + str(date) + ".json", 'r', encoding="utf8") as file:
+                predictResult = json.load(file)
+            astarMapRaw = predictResult['data']
+        else:
+            predictResult = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+            ## predictResult[1] 格子
+            with open('model_cache/' + str(date) + ".json", 'w', encoding="utf8") as file:
+                json.dump({"data":predictResult[0], "poly": predictResult[1].tolist()},file)
+            astarMapRaw = predictResult[0]
+
+        #squareLen = 1000
+        squareLen = 100
+        #with open('done.json', 'r', encoding="utf8") as file:
+        #    raw_file = file.readlines()
+        #    json_file = json.loads(raw_file[0])
+        '''
+        # 顯示格子
+        polyList = []
+        for i in range(124):
+            for j in range(172):
+                north = 22.9608991322419 + i * squareLen / 110574
+                south = 22.9608991322419 + (i + 1) * squareLen / 110574
+                east = 120.143344802625 + j * squareLen / 102409.09
+                west = 120.143344802625 + (j + 1) * squareLen / 102409.09
+                #polyList.append([[north,south,east,west],[json_file[i][j]*255//7,0,0]])
+                polyList.append([[north,south,east,west],[predictResult[1][i][j][0],predictResult[1][i][j][1],predictResult[1][i][j][2]]])
+        '''
+
+        #astar_input=numpy.array(json_file)
+        #astarMapRaw = a_star(astar_input, 20)
+        '''
         if 20191216 < date < 20191221:
             astarMapRaw = [113, 129, 145, 146, 147, 148, 149, 150, 135, 119, 103, 87, 71, 55, 39, 38, 37, 36, 35, 34]
         elif 20191230< date <20200104:
             astarMapRaw = [18, 34, 50, 66, 82, 98, 114, 131, 148, 165, 166, 151, 168, 152, 167, 150, 134, 117, 116, 132]
+        '''
         astarMap = []
         for ele in astarMapRaw:
             eleRow = ele // 16
             eleCol = ele % 16
             astarMap.append(eleCol+eleRow*18)
+            '''
+            eleRow = ele // 170
+            eleCol = ele % 170
+            astarMap.append(eleCol + eleRow * 172)
+            '''
         route = astarMap
         content = {}
         with open('csv/區塊施工紀錄_' + meter + '公尺.csv', 'r', encoding="utf8") as csvinput:
@@ -364,6 +401,9 @@ def showingPath(request,date):
                 routeList.append(readerDic[spot][0])
         content["routeList"] = routeList
         content["routeListLen"] = len(routeList)-1
+        # 顯示格子
+        #content["polyList"] = polyList
+        content["polyList"] = {}
         print(routeList)
         return render(request,"map.html",content)
     elif request.method == "POST":
