@@ -2,7 +2,7 @@
 "name": "Tainan",
 "short_name": "Tainan",
 "description": "demo pwa with django",
-"start_url": "/displayHole",
+"start_url": "/showingPath/20191218",
 "scope": ".",
 "background_color": "#EEE",
 "theme_color": "#4A148C",
