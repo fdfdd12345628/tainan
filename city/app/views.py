@@ -1,17 +1,17 @@
-from django.shortcuts import render
-import itertools
-import urllib,json
-import csv
-import os
-import datetime
-from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
-from django.utils.timezone import make_aware
-from .models import weather,hole,examination
-from .water import water
-from django.conf import settings
 import base64
+import csv
+import itertools
+import urllib
+
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.utils.timezone import make_aware
+
 from .app import *
-from django.shortcuts import redirect
+from .models import weather, hole, examination
+from .water import water
+
 
 # Create your views here.
 def googleMap(request):
@@ -128,7 +128,7 @@ def processDataWeatherPredict(request):
                 totalRow.append(newRow)
         writer.writerows(totalRow)
         content["downloadURL"] = "predict.csv"
-    return render(request,"downloadData.html.html",content)
+    return render(request, "downloadData.html", content)
 
 
 def displayHole(request):
@@ -335,17 +335,19 @@ def showingPath(request,date):
         else:
             route =[75,60,59,58,57]
         '''
-        #print(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d"),"%Y/%m/%d"))
-        ##astarMapRaw = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+        # print(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d"),"%Y/%m/%d"))
+        astarMapRaw = gen_pred_hole(
+            datetime.datetime.strftime(datetime.datetime.strptime(str(date), "%Y%m%d") - datetime.timedelta(weeks=15),
+                                       "%Y/%m/%d"))
         if 20191216 < date < 20191221:
             astarMapRaw = [113, 129, 145, 146, 147, 148, 149, 150, 135, 119, 103, 87, 71, 55, 39, 38, 37, 36, 35, 34]
-        elif 20191230< date <20200104:
+        elif 20191230 < date < 20200104:
             astarMapRaw = [18, 34, 50, 66, 82, 98, 114, 131, 148, 165, 166, 151, 168, 152, 167, 150, 134, 117, 116, 132]
         astarMap = []
         for ele in astarMapRaw:
             eleRow = ele // 16
             eleCol = ele % 16
-            astarMap.append(eleCol+eleRow*18)
+            astarMap.append(eleCol + eleRow * 18)
         route = astarMap
         content = {}
         with open('csv/區塊施工紀錄_' + meter + '公尺.csv', 'r', encoding="utf8") as csvinput:

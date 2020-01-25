@@ -1,4 +1,5 @@
-import json, math
+import math
+
 import numpy as np
 from PIL import Image
 
@@ -38,8 +39,8 @@ def d(data, came_from, current_node, target_node, start_node):
     end_x = target_node // data.shape[1]
     end_y = target_node % data.shape[1]
     result = -(data.flat[target_node] * 1)
-    print(data.flat[target_node])
-    print(data.flat[current_node])
+    # print(data.flat[target_node])
+    # print(data.flat[current_node])
     result += math.sqrt((start_x - end_x) ** 2 + (start_y - end_y) ** 2)
     path = construct(came_from, current_node, start_node)
     # child_node=0
@@ -148,11 +149,7 @@ def a_star(data, start=None, end=None, blocks=0):
     return None
 
 
-if __name__ == '__main__':
-    # test=np.array(range(100))
-    # test=np.reshape(test, (10, 10))
-    # test=pre(test)
-    # print(test)
+def dev_func():
     with open('區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
         raw = Image.open('map_pred1.bmp')
         test = np.array(raw)
@@ -165,8 +162,12 @@ if __name__ == '__main__':
         if path is not None:
             break'''
     path = a_star(test, blocks=15)
+    # print(path)
     test = test[1:-1, 1:-1]
     path_array = np.zeros(test.shape)
     for i in path:
         path_array.flat[i] = 1
+
+
+if __name__ == '__main__':
     pass
