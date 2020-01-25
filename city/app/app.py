@@ -11,7 +11,7 @@ from PIL import Image
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 
-from .astar import a_star
+from astar import a_star
 
 # import keras
 
