@@ -18,6 +18,8 @@ from .astar import a_star
 model = load_model('test.h5')
 
 
+
+
 # input: the date people want to know about the occurrences of holls *format: "year/month/day"
 # output: image or np array helping to calculate the best path to walk 
 def gen_pred_hole(date):
@@ -35,8 +37,7 @@ def gen_pred_hole(date):
     y_pred = predict(X)
     # print(y_pred.shape)
     gen_result_map(y_pred)
-    best_path = gen_walk_path()
-    return best_path
+    return gen_walk_path()
 
 # process input (date) to the right format 
 def date_processing(date):
@@ -150,7 +151,7 @@ def gen_result_map(y_pred):
     for i in range(0, map_result.shape[1]):
         for j in range(0, map_result.shape[2]):
             ###### threshold ######
-            if y_pred[0][i][j][0] > 0.05:
+            if y_pred[0][i][j][0] > 0.03:
                 map_result[2][i][j] = y_pred[0][i][j][0]   # channel 'red'
     
     map_result = result_map_scale(map_result)
@@ -186,5 +187,5 @@ def gen_walk_path():
         data.flat[i]=1
     '''
     #os.chdir("../")   # change directory to where images stored
-
-    return result
+    returnList = [result,map_pred]
+    return returnList
