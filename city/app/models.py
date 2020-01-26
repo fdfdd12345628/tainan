@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 # Create your models here.
 
@@ -34,3 +35,14 @@ class examination(models.Model):
     examinationTime = models.DateTimeField(auto_now=True)
     photoURL = models.CharField(max_length=100,blank=True)
 
+class modelResult(models.Model):
+    '''
+    儲存model, Astar預測結果
+    暫時忽略polyList
+    '''
+    date = models.DateTimeField()
+    route = models.CharField(max_length=200)
+    def set_route(self,data):
+        self.route = json.dumps(data)
+    def get_route(self):
+        return json.loads(self.route)

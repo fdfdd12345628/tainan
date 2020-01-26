@@ -6,7 +6,7 @@ import os
 import datetime
 from django.http import JsonResponse,HttpResponse,HttpResponseRedirect
 from django.utils.timezone import make_aware
-from .models import weather,hole,examination
+from .models import weather,hole,examination,modelResult
 from .water import water
 from django.conf import settings
 import base64
@@ -336,16 +336,15 @@ def showingPath(request,date):
         else:
             route =[75,60,59,58,57]
         '''
-        if os.path.exists("model_cache/"+str(date)+".json"):
-            with open('model_cache/' + str(date) + ".json", 'r', encoding="utf8") as file:
-                predictResult = json.load(file)
-            astarMapRaw = predictResult['data']
-        else:
-            predictResult = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date),"%Y%m%d")-datetime.timedelta(weeks=15),"%Y/%m/%d"))
+        if modelResult.objects.filter(date=datetime.datetime.strptime(str(date), '%Y%m%d')).count() == 0:
+            predictResult = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date), "%Y%m%d") - datetime.timedelta(weeks=15),"%Y/%m/%d"))
             ## predictResult[1] 格子
-            with open('model_cache/' + str(date) + ".json", 'w', encoding="utf8") as file:
-                json.dump({"data":predictResult[0], "poly": predictResult[1].tolist()},file)
+            newResult = modelResult.objects.create(date = datetime.datetime.strptime(str(date), '%Y%m%d'))
+            newResult.set_route(predictResult[0])
+            newResult.save()
             astarMapRaw = predictResult[0]
+        else:
+            astarMapRaw = modelResult.get_route(modelResult.objects.filter( date= datetime.datetime.strptime( str(date),'%Y%m%d' ) )[0])
 
         #squareLen = 1000
         squareLen = 100
