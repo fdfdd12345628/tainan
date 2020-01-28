@@ -38,8 +38,8 @@ def d(data, came_from, current_node, target_node, start_node):
     end_x = target_node // data.shape[1]
     end_y = target_node % data.shape[1]
     result = -(data.flat[target_node] * 1)
-    #print(data.flat[target_node])
-    #print(data.flat[current_node])
+    # print(data.flat[target_node])
+    # print(data.flat[current_node])
     # result += math.sqrt((start_x - end_x) ** 2 + (start_y - end_y) ** 2)
     path = construct(came_from, current_node, start_node)
     # child_node=0
@@ -90,13 +90,18 @@ def a_star(data, start=None, end=None, blocks=0):
         start = np.argmax(data)
     while len(open_set) != 0:
         # current_min=f_score.max
+        # print(open_set)
         current = np.argmax(f_score)
         for i in open_set:
             if f_score.flat[i] < f_score.flat[current]:
                 current = i
+
+        # if can't find path, break and return none. (disable for now)
+        '''if current == np.argmax(f_score):
+            break'''
         if current == np.argmax(f_score):
-            break
-        # current = np.argmin(f_score)
+            print('no route!! start random route')
+
         if end != None:
             if current == end:
                 path = construct(came_from_list, end, start)
@@ -137,7 +142,7 @@ def a_star(data, start=None, end=None, blocks=0):
             if chile_node in walked:
                 continue
             tentative_gScore = g_score.flat[current] + d(data, came_from_list, current, chile_node, start)  # d()
-            if tentative_gScore < g_score.flat[chile_node]:
+            if tentative_gScore <= g_score.flat[chile_node]:
                 walked[current] = 0
                 came_from_list.flat[chile_node] = current
                 g_score.flat[chile_node] = tentative_gScore
@@ -153,7 +158,7 @@ if __name__ == '__main__':
     # test=np.reshape(test, (10, 10))
     # test=pre(test)
     # print(test)
-    with open('csv/區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
+    with open('區塊坑洞挖掘與施工紀錄_1000公尺.json', 'r+', encoding='utf8') as file:
         raw = Image.open('map_pred1.bmp')
         test = np.array(raw)
         test = test[:, :, 0]
@@ -165,7 +170,7 @@ if __name__ == '__main__':
         if path is not None:
             break'''
     path = a_star(test, blocks=15)
-    print(path)
+    # print(path)
     test = test[1:-1, 1:-1]
     path_array = np.zeros(test.shape)
     for i in path:

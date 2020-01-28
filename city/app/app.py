@@ -26,16 +26,11 @@ def gen_pred_hole(date):
     nearest_Monday_year, nearest_Monday_month, nearest_Monday_day = date_processing(date)
     data_map = data_processing(nearest_Monday_year, nearest_Monday_month,
                                nearest_Monday_day)  # maps with two channels (working records, and holes)
-    '''
-    '''
     gen_map_images(data_map)
-    print('second sstep' + str(datetime.datetime.now()))
     time.sleep(0)
     X = gen_X()
-    print('third sstep' + str(datetime.datetime.now()))
     time.sleep(0)
     y_pred = predict(X)
-    # print(y_pred.shape)
     gen_result_map(y_pred)
     return gen_walk_path()
 
