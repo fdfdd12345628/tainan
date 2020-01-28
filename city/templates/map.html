@@ -13,14 +13,13 @@
             integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
             crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-
-
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 
     <!-- Bootstrap Js -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="../static/datepicker.css">
+    <link rel="stylesheet" href="../static/showingPath.css">
     <script src="../static/datepicker.js"></script>
 
     <title>坑洞巡查預測路線</title>
@@ -43,9 +42,9 @@
     <div class="bottomNavItem" id="dateNavItem">
         <!--img src="https://image.flaticon.com/icons/svg/1/1078.svg" alt="date"-->
         <i id="dateIcon" class="material-icons-outlined md-dark">date_range</i>
-        <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
         <label for="dateIcon">Date</label>
     </div>
+    <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
     <a href="../pastMap">
         <div class="bottomNavItem" >
             <i id="recordIcon"class="material-icons-outlined md-dark">insert_chart</i>
@@ -92,16 +91,26 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content" id="dateContent">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">選擇日期</h5>
+                <!--h5 class="modal-title" id="modalLabel">選擇日期</h5-->
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" data-toggle="datepicker" id="date">
+                <input type="text" data-toggle="datepicker" id="date">
+                <img src="https://image.flaticon.com/icons/svg/1170/1170690.svg" id="dateImg">
+                <div id="dateMiddle">
+                    <div id="month" class="dateNumber">
+                        12
+                    </div>
+                    <div id="day" class="dateNumber">
+                        31
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button>
+            <div class="modal-footer" id="dateSendButton">
+                Search
+                <!--button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button-->
             </div>
         </div>
     </div>
@@ -126,99 +135,7 @@
     var csrftoken = getCookie('csrftoken');
 </script>
 <script>
-    function initMap() {
-        directionsService = new google.maps.DirectionsService;
-        directionsDisplay = new google.maps.DirectionsRenderer;
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 10,
-            center: {lat: 22.9988465,lng: 120.2173261 },
-            scaleControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            styles: [
-                {
-                    "featureType": "administrative",
-                    "elementType": "geometry",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "administrative.land_parcel",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road",
-                    "elementType": "labels.icon",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.arterial",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.highway",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.local",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.local",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "transit",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                }
-            ]
-        });
-        directionsDisplay.setMap(map);
-        console.log('map');
-    }
+
     setTimeout(function () {
         mapRoute()
         mapRectangle()
@@ -361,6 +278,9 @@
         })
         $(document).on("click","#dateNavItem",function (e) {
             $("#dataButton").click()
+            setTimeout(function () {
+                $("#date").focus()
+            },400)
         })
     })
     /*
@@ -425,7 +345,7 @@
     $(document).on("click","#dateSendButton",function () {
         console.log($("#date").val())
         var dateInput = $("#date").val().split("/")
-        window.location.replace("./"+dateInput[2]+dateInput[0]+dateInput[1]);
+        //window.location.replace("./"+dateInput[2]+dateInput[0]+dateInput[1]);
         /*
         $.ajax({
             type: 'POST',
@@ -490,199 +410,112 @@
          */
     })
 
+    $(document).on("click", "#dateImg",function () {
+        $("#date").focus();
+    })
+    $(document).ready(function() {
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        $("#month").html(mm)
+        $("#day").html(dd)
+    })
+</script>
+<script>
+   function initMap() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: {lat: 22.9988465,lng: 120.2173261 },
+            scaleControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            styles: [
+                {
+                    "featureType": "administrative",
+                    "elementType": "geometry",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "administrative.land_parcel",
+                    "elementType": "labels",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "poi",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road",
+                    "elementType": "labels.icon",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.arterial",
+                    "elementType": "labels",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "labels",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.local",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.local",
+                    "elementType": "labels",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "transit",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                }
+            ]
+        });
+        directionsDisplay.setMap(map);
+        console.log('map');
+    }
 </script>
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
 </html>
-<style>
-    #map{
-        height: 90vh;
-        width: 100vw;
-        position: absolute;
-        left: 0;
-        top:0;
-    }
-    #bottomNav{
-        height: 10vh;
-        width: 100vw;
-        background: #f9f8f6;
-        position: absolute;
-        border-top: 1pt solid;
-        border-color: #575757;
-        bottom: 0;
-        left: 0;
-    }
-    .bottomNavItem{
-        height: 100%;
-        width:25%;
-        float: left;
-        margin-top: 0.5vh;
-        text-align: center;
-        vertical-align: middle;
-        display: inline-block;
-        color: #575757;
-        cursor: pointer;
-    }
-    .bottomNavItem > i{
-        font-size: 6vh;
-        vertical-align: middle;
-        text-align: center;
-        border-radius: 10vh;
-        display: block;
-    }
-    .bottomNavItem > label{
-        font-size: 2vh;
-        vertical-align: bottom;
-    }
-    #photoModal{
-        height: 80vh;
-        width:80vw !important;
-        margin: 10vh 10vw;
-        position: absolute;
-        top:0;
-        left: 0;
-        border-radius: 2vh;
-        background: #f5f5f5;
-    }
-    h1{
-        font-size: 10vw !important;
-    }
-    .header > i{
-        font-size: 5vw;
-        position: absolute;
-        top: 4vw;
-        right: 2.5vw;
-    }
-    h2{
-        font-size: 6vw !important;
-    }
-    #uploadClose{
-        position: absolute;
-        top:0;
-        right: 2vw;
-    }
-    .methodField{
-        display: inline-block;
-    }
-    .uploadMethod{
-        height:30vh;
-        width:70vw;
-        margin:1vh 5vw 0 5vw;
-        display: inline-block;
-        text-align: center;
-        vertical-align: middle;
-        float: left;
-        background: #b6b6b6;
-        color: #676767;
-    }
-    .uploadMethod > i{
-        vertical-align: middle;
-        font-size:18vw ;
-        margin:15vw 26vw;
-    }
-    #uploadPicker{
-        opacity: 0;
-    }
-    #photoUploaded{
-        max-height: 100%;
-        max-width: 100%;
-        display: none;
-    }
-    .placeDetail{
-        height:10vh;
-        width: 80vw;
-    }
-    .autoLocate{
-        width: 10vw;
-        margin:  1vh 5vw 1vh 5vw;
-        float: right;
-        text-align: center;
-        vertical-align: middle;
-        border-radius: 2vh;
-        background: #e4e4e4;
-    }
-    .autoLocate > i{
-        font-size: 5vh;
-    }
-    .positionLabel{
-        font-size: 3vh !important;
-    }
-    .field{
-        margin: 0 5vw 5vh 5vw !important;
-        width:60vw;
-        height: 5vh;
-    }
-    .field > input{
-        height: 4vh;
-        font-size: 3vh !important;
-    }
-    .form-control{
-        height: 5vh;
-        font-size: 4vw;
-    }
-    .close > span{
-        font-size: 6vw;
-    }
-    #modal{
-        width:80vw !important;
-        height:60vh !important;
-        position: absolute;
-        top:15vh;
-        left:10vw;
-    }
-    .modal-dialog{
-        max-width: 100%;
-        max-height: 50vh;
-        height:50vh;
-    }
-    .modal-content{
-        max-width: 100%;
-        max-height: 50vh;
-        height:50vh;
-    }
-    #modalLabel{
-        font-size: 10vw;
-    }
-    .datepicker-panel{
-        width:80vw !important;
-    }
-    .datepicker-container{
-        width:80vw !important;
-    }
-    .datepicker-panel > ul > li{
-        width:11vw !important;
-        height:4vh !important;
-        font-size: 3vw;
-    }
-    .datepicker-panel >ul:first-child >li{
-        width: 32.5% !important;
-    }
-    .modal-footer{
-        height:6vh !important;
-    }
-    #dateSendButton{
-        height: 80%;
-        width: 10vw;
-        font-size: 4vw;
-        text-align: center;
-        vertical-align: middle;
-    }
-    #uploadPhotoButton{
-        height: 4vh;
-        width: 15vw;
-        position: absolute;
-        bottom: 1vh;
-        right: 2vw;
-        font-size: 3vw;
-        border-radius: 1.5vw;
-    }
-    #dateContent{
-        height:60vh;
-        border-radius: 2vh;
-    }
-    .modal-dialog{
-        max-width: 100%;
-        max-height: 50vh;
-        height:50vh;
-    }
-</style>

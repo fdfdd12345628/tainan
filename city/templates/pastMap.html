@@ -18,6 +18,7 @@
     <!-- Bootstrap Js -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="./static/datepicker.css">
+    <link rel="stylesheet" href="./static/pastMap.css">
     <script src="./static/datepicker.js"></script>
     <title>坑洞巡查紀錄</title>
 </head>
@@ -31,12 +32,12 @@
             <label for="navigationIcon">Route</label>
         </div>
     </a>
-    <div class="bottomNavItem">
+    <div class="bottomNavItem" id="dateNavItem">
         <!--img src="https://image.flaticon.com/icons/svg/1/1078.svg" alt="date"-->
         <i id="dateIcon" class="material-icons-outlined md-dark">date_range</i>
-        <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
         <label for="dateIcon">Date</label>
     </div>
+    <button type="button" id="dataButton" class="btn btn-primary" data-target="#modal" data-toggle="modal" style="position: absolute;top:-100vh;"></button>
     <a href="../statistic">
         <div class="bottomNavItem" >
             <i id="recordIcon"class="material-icons-outlined md-dark">show_chart</i>
@@ -48,16 +49,26 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content" id="dateContent">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">選擇日期</h5>
+                <!--h5 class="modal-title" id="modalLabel">選擇日期</h5-->
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control" data-toggle="datepicker" id="date">
+                <input type="text" data-toggle="datepicker" id="date" onchange="dateChange()">
+                <img src="https://image.flaticon.com/icons/svg/1170/1170690.svg" id="dateImg">
+                <div id="dateMiddle">
+                    <div id="month" class="dateNumber">
+                        12
+                    </div>
+                    <div id="day" class="dateNumber">
+                        31
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button>
+            <div class="modal-footer" id="dateSendButton">
+                Search
+                <!--button type="button" class="btn btn-primary" id="dateSendButton" data-dismiss="modal">Go</button-->
             </div>
         </div>
     </div>
@@ -182,9 +193,20 @@
     }
 </script>
 <script>
+    function dateChange(){
+        console.log($("#date").val())
+        $("#month").html($("#date").val().substring(0,2))
+        $("#day").html($("#date").val().substring(3,5))
+    }
     $(function () {
-        $(document).on("click","#dateIcon",function (e) {
+    $(document).on("click","#dateNavItem",function (e) {
             $("#dataButton").click()
+            setTimeout(function () {
+                $("#date").focus()
+            },400)
+        })
+        $(document).on("click", "#dateImg",function () {
+            $("#date").focus();
         })
     })
     $(function() {
@@ -253,7 +275,6 @@
         $(".modal").modal("hide")
     }
     $(document).on("click","#dateSendButton",function () {
-        console.log($("#date").val())
         $.ajax({
             type: 'POST',
             url: '',
@@ -284,6 +305,7 @@
                 }
             },
         })
+        closeModal()
     })
 </script>
 <script>
@@ -307,166 +329,6 @@
 <script type="text/javascript"
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE8mHU0wbuntLJm6QPp6XsvFWFLqG-uEc&callback=initMap"></script>
 <style>
-    #map{
-        height: 90vh;
-        width: 100vw;
-        position: absolute;
-        left: 0;
-        top:0;
-    }
-    #bottomNav{
-        height: 10vh;
-        width: 100vw;
-        background: #f9f8f6;
-        position: absolute;
-        border-top: 1pt solid;
-        border-color: #575757;
-        bottom: 0;
-        left: 0;
-    }
-    .bottomNavItem{
-        height: 100%;
-        width:33%;
-        float: left;
-        margin-top: 0.5vh;
-        text-align: center;
-        vertical-align: middle;
-        display: inline-block;
-        color: #575757;
-        cursor: pointer;
-    }
-    .bottomNavItem > i{
-        font-size: 6vh;
-        vertical-align: middle;
-        text-align: center;
-        border-radius: 10vh;
-        display: block;
-    }
-    .bottomNavItem > label{
-        font-size: 2vh;
-        vertical-align: bottom;
-    }
-    #dateContent{
-        height:60vh;
-        border-radius: 2vh;
-    }
-    #modal{
-        width:80vw !important;
-        height:60vh !important;
-        position: absolute;
-        top:15vh;
-        left:10vw;
-    }
-    .modal-dialog{
-        max-width: 100%;
-        max-height: 50vh;
-        height:50vh;
-    }
-    .modal-title{
-        font-size: 4vh;
-    }
-    .modal-content{
-        max-width: 100%;
-        max-height: 50vh;
-        height:50vh;
-    }
-    #modalLabel{
-        font-size: 10vw;
-    }
-    .datepicker-panel{
-        width:80vw !important;
-    }
-    .datepicker-container{
-        width:80vw !important;
-    }
-    .datepicker-panel > ul > li{
-        width:11vw !important;
-        height:4vh !important;
-        font-size: 3vw;
-    }
-    .datepicker-panel >ul:first-child >li{
-        width: 32.5% !important;
-    }
-    .modal-footer{
-        height:6vh !important;
-    }
-    #dateSendButton{
-        height: 80%;
-        width: 10vw;
-        font-size: 4vw;
-        text-align: center;
-        vertical-align: middle;
-    }
-    .form-control{
-        height: 5vh;
-        font-size: 4vw;
-    }
-    .close > span{
-        font-size: 6vw;
-    }
-    #detailModal{
-        height: 70vh;
-        width: 80vw;
-        position:absolute;
-        top:15vh;
-        left:10vw;
-        border-radius: 2vh;
-    }
-    .modal-content{
-        height: 70vh;
-        max-height: 70vh;
-        width: 80vw;
-        max-width: 80vw;
-        display: block;
-    }
-    .modal-body{
-        padding: 0 !important;
-    }
-    .modal-dialog{
-        margin: 0;
-    }
-    #detailContent{
-        max-height: 70vh;
-        width: 100%;
-    }
-    #detailContent > label{
-        margin-top: 4vh;
-        font-size: 3vh;
-    }
-    #timeModal{
-        display: inline-block;
-        height: 3vh;
-        width: 60vw;
-        font-size: 2.5vh;
-        margin: .5vh !important;
-        color: #666666;
-        margin-top: 4.5vh !important;
-        float: right;
-    }
-    #positionModal{
-        display: inline-block;
-        height: 3vh;
-        width: 55vw;
-        font-size: 2.5vh;
-        margin: .5vh;
-        margin-top: 4.5vh !important;
-        color: #666666;
-        float: right;
 
-    }
-    .photo{
-        height:40vh;
-        width:70vw;
-        margin:4vh 5vw 0 5vw;
-        display: inline-block;
-        text-align: center;
-        vertical-align: middle;
-        float: left;
-        border-radius: 2vh;
-    }
-    #photoImg{
-        max-height: 100%;
-        max-width: 100%;
-    }
 
 </style>
