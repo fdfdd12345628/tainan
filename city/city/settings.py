@@ -25,7 +25,7 @@ SECRET_KEY = 'ptm2d%_m*t*6h-w_*1^dw!$fv$w0m7=seyi)wou^c&+bh^30t('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['chendin.tk', '127.0.0.1']
 
 
 # Application definition

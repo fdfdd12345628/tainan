@@ -1,15 +1,22 @@
 '''input: date of hole occurrences wanted to predict, output the map of prediction'''
-import json 
-import time
-import datetime
 import calendar
+import datetime
+import json
 import os
+import time
+
+import cv2
 import numpy as np
 from PIL import Image
-from sklearn.preprocessing import MinMaxScaler 
-import cv2
-import pickle
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+
 from astar import a_star
+
+# import keras
+
+model = load_model('test.h5')
+
 
 
 
@@ -17,15 +24,13 @@ from astar import a_star
 # output: image or np array helping to calculate the best path to walk 
 def gen_pred_hole(date):
     nearest_Monday_year, nearest_Monday_month, nearest_Monday_day = date_processing(date)
-    data_map = data_processing(nearest_Monday_year, nearest_Monday_month, nearest_Monday_day)   # maps with two channels (working records, and holes)
-    '''
-    '''
+    data_map = data_processing(nearest_Monday_year, nearest_Monday_month,
+                               nearest_Monday_day)  # maps with two channels (working records, and holes)
     gen_map_images(data_map)
-    time.sleep(2)
+    time.sleep(0)
     X = gen_X()
-    time.sleep(2)
+    time.sleep(0)
     y_pred = predict(X)
-    #print(y_pred.shape)
     gen_result_map(y_pred)
     return gen_walk_path()
 
@@ -126,9 +131,13 @@ def gen_X():
     return X
 
 # load in model and predict the result
-def predict(X): 
-    model = pickle.load(open("convlstm.pickle.dat", "rb"))
-    y_pred = model.predict(X)
+def predict(X):
+    # pickle.load(open("convlstm.pickle.dat", "rb"))
+    # print('loaded'+str(datetime.datetime.now()))
+    # log_dir = "logs/profile/" #  + datetime.now().strftime("%Y%m%d-%H%M%S")
+    # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, profile_batch=1)
+    y_pred = model.predict(X, )
+
     return y_pred
 
 # generate y_pred map to indicate the result of prediction (holes)
