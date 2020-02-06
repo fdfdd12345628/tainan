@@ -1,6 +1,7 @@
 import json, math
 import numpy as np
 from PIL import Image
+import random
 
 
 def construct(came_from, end, start):
@@ -23,7 +24,13 @@ def construct(came_from, end, start):
 
 def h(data, came_from, current_node, target_node, start_node):
     if target_node == None:
-        return 500
+        second = data.flatten().argsort()
+        for i in second[::-1]:
+            if i ==current_node:
+                continue
+            else:
+                target_node=i
+                break
     start_x = current_node // data.shape[1]
     start_y = current_node % data.shape[1]
     end_x = target_node // data.shape[1]
@@ -150,6 +157,11 @@ def a_star(data, start=None, end=None, blocks=0):
                 if chile_node not in open_set:
                     open_set[chile_node] = 0
 
+    while True:
+        place=random.randint(0,len(data))
+        path = construct(came_from_list, end=place, start=start)
+        if len(path)>=5:
+            return path
     return None
 
 
