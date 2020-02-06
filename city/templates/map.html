@@ -97,7 +97,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" data-toggle="datepicker" id="date">
+                <input type="text" data-toggle="datepicker" id="date"  onchange="dateChange()">
                 <img src="https://image.flaticon.com/icons/svg/1170/1170690.svg" id="dateImg">
                 <div id="dateMiddle">
                     <div id="month" class="dateNumber">
@@ -135,7 +135,11 @@
     var csrftoken = getCookie('csrftoken');
 </script>
 <script>
-
+    function dateChange(){
+        console.log($("#date").val())
+        $("#month").html($("#date").val().substring(0,2))
+        $("#day").html($("#date").val().substring(3,5))
+    }
     setTimeout(function () {
         mapRoute()
         mapRectangle()
@@ -345,7 +349,7 @@
     $(document).on("click","#dateSendButton",function () {
         console.log($("#date").val())
         var dateInput = $("#date").val().split("/")
-        //window.location.replace("./"+dateInput[2]+dateInput[0]+dateInput[1]);
+        window.location.replace("./"+dateInput[2]+dateInput[0]+dateInput[1]);
         /*
         $.ajax({
             type: 'POST',
