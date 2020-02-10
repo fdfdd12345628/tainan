@@ -203,10 +203,12 @@ h2{
 }
 #date{
     width: 0px;
+    display: none;
 }
 #dateImg{
     height: 5vh;
     width: 5vh;
+    margin-left: 3vh;
     filter: opacity(40%);
     position: absolute;
     left: 0;

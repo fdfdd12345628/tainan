@@ -166,10 +166,12 @@
     max-width: 100%;
 }#date{
      width: 0px;
+     display: none;
  }
 #dateImg{
     height: 5vh;
     width: 5vh;
+    margin-left: 3vh;
     filter: opacity(40%);
     position: absolute;
     left: 0;
@@ -187,4 +189,13 @@
     position: absolute;
     right:15vw;
     top: 10vh;
+}
+
+.datepicker-panel >ul:first-child >li{
+    width: 30% !important;
+    font-size: 2.5vh;
+    margin: auto;
+}
+.datepicker-panel >ul:first-child >li:nth-child(2) {
+    width: 40% !important;
 }
