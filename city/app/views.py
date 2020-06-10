@@ -337,7 +337,7 @@ def showingPath(request,date):
             route =[75,60,59,58,57]
         '''
         if modelResult.objects.filter(date=datetime.datetime.strptime(str(date), '%Y%m%d')).count() == 0:
-            predictResult = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date), "%Y%m%d") - datetime.timedelta(weeks=15),"%Y/%m/%d"))
+            predictResult = gen_pred_hole(datetime.datetime.strftime(datetime.datetime.strptime(str(date), "%Y%m%d") - datetime.timedelta(weeks=45),"%Y/%m/%d"))
             ## predictResult[1] 格子
             newResult = modelResult.objects.create(date = datetime.datetime.strptime(str(date), '%Y%m%d'))
             newResult.set_route(predictResult[0])
